@@ -1,1025 +1,3797 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>for Mar</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0d0d1c">
+<title>for Mar ❤️</title>
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,500&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,500;1,600&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+
 <style>
-  :root{
-    --night:#0d0d1c; --night2:#181832;
-    --gold:#d9a655; --gold-soft:#f0d9a8;
-    --rose:#b5495b; --rose-deep:#6e2130;
-    --cream:#f7ecd9; --blush:#e8b4bd;
+:root{
+  --night:#0d0d1c;
+  --night2:#181832;
+  --gold:#d9a655;
+  --gold-soft:#f0d9a8;
+  --rose:#b5495b;
+  --rose-deep:#6e2130;
+  --cream:#f7ecd9;
+  --paper:#fbf3e0;
+  --paper2:#f3e4c4;
+}
+
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+  -webkit-tap-highlight-color:transparent;
+}
+
+html,
+body{
+  width:100%;
+  height:100%;
+  overflow:hidden;
+  background:var(--night);
+  font-family:'Quicksand',sans-serif;
+  touch-action:none;
+  overscroll-behavior:none;
+}
+
+body{
+  position:fixed;
+  inset:0;
+}
+
+button,
+input,
+select{
+  font:inherit;
+}
+
+button{
+  -webkit-appearance:none;
+  appearance:none;
+}
+
+#canvas-holder{
+  position:fixed;
+  inset:0;
+  z-index:1;
+}
+
+canvas{
+  display:block;
+  width:100%;
+  height:100%;
+  touch-action:none;
+}
+
+/* =========================
+   TRANSITIONS
+========================= */
+
+#fade{
+  position:fixed;
+  inset:0;
+  background:#080710;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity 1s ease;
+  z-index:90;
+}
+
+#fade.show{
+  opacity:1;
+  pointer-events:all;
+}
+
+#black-out{
+  position:fixed;
+  inset:0;
+  background:#000;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity 2.5s ease;
+  z-index:300;
+}
+
+#black-out.show{
+  opacity:1;
+  pointer-events:all;
+}
+
+/* =========================
+   GLOBAL UI
+========================= */
+
+.ui-layer{
+  position:fixed;
+  inset:0;
+  z-index:20;
+  pointer-events:none;
+}
+
+.ui-layer > *{
+  pointer-events:auto;
+}
+
+.title-mark{
+  position:fixed;
+  top:max(20px, env(safe-area-inset-top));
+  left:50%;
+  transform:translateX(-50%);
+  padding-top:6px;
+  font-family:'Cormorant Garamond',serif;
+  font-style:italic;
+  font-size:20px;
+  color:var(--gold-soft);
+  text-shadow:0 2px 15px rgba(0,0,0,.8);
+  opacity:.9;
+  white-space:nowrap;
+}
+
+.hint{
+  position:fixed;
+  left:50%;
+  bottom:max(24px, env(safe-area-inset-bottom));
+  transform:translateX(-50%);
+  width:90%;
+  text-align:center;
+  color:var(--gold-soft);
+  font-size:12px;
+  letter-spacing:.06em;
+  line-height:1.5;
+  text-shadow:0 2px 12px rgba(0,0,0,.8);
+  opacity:.85;
+}
+
+.hint.pulse{
+  animation:pulse 2.5s ease-in-out infinite;
+}
+
+@keyframes pulse{
+  0%,100%{opacity:.45}
+  50%{opacity:1}
+}
+
+.audio-badge{
+  position:fixed;
+  top:max(22px, env(safe-area-inset-top));
+  right:16px;
+  color:var(--gold-soft);
+  font-size:10px;
+  opacity:.55;
+}
+
+/* =========================
+   WELCOME
+========================= */
+
+#welcome-screen{
+  position:fixed;
+  inset:0;
+  z-index:200;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  padding-top:max(20px, env(safe-area-inset-top));
+  padding-bottom:max(20px, env(safe-area-inset-bottom));
+  text-align:center;
+  background:
+    radial-gradient(circle at 50% 30%,#29203d 0%,#100c1d 55%,#07060d 100%);
+  transition:opacity 1.2s ease;
+}
+
+.welcome-glow{
+  position:absolute;
+  width:65vw;
+  height:65vw;
+  max-width:500px;
+  max-height:500px;
+  border-radius:50%;
+  background:rgba(217,166,85,.06);
+  filter:blur(60px);
+  pointer-events:none;
+}
+
+.paper{
+  position:relative;
+  width:min(100%,540px);
+  max-height:78vh;
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+  background:linear-gradient(180deg,var(--paper),var(--paper2));
+  color:#120a04;
+  border-radius:7px;
+  padding:30px 23px;
+  font-family:'Cormorant Garamond',serif;
+  font-size:18px;
+  font-weight:500;
+  line-height:1.6;
+  text-align:left;
+  box-shadow:
+    0 35px 100px rgba(0,0,0,.65),
+    0 0 0 1px rgba(255,255,255,.08);
+}
+
+.paper::before{
+  content:"";
+  position:absolute;
+  inset:8px;
+  border:1px solid rgba(80,45,20,.12);
+  pointer-events:none;
+}
+
+.paper p{
+  margin-bottom:14px;
+}
+
+.paper .lead{
+  font-size:27px;
+  line-height:1.2;
+  font-weight:600;
+}
+
+.paper .close-line{
+  font-style:italic;
+  text-align:right;
+}
+
+#welcome-paper{
+  text-align:center;
+}
+
+#welcome-paper .paper-content{
+  position:relative;
+  z-index:1;
+}
+
+#welcome-body{
+  margin-top:15px;
+}
+
+.btn{
+  border:0;
+  outline:none;
+  padding:13px 25px;
+  min-height:46px;
+  border-radius:999px;
+  background:var(--gold);
+  color:#2b1d0c;
+  font-weight:700;
+  font-size:13px;
+  cursor:pointer;
+  box-shadow:0 8px 25px rgba(217,166,85,.18);
+  transition:transform .2s ease,box-shadow .2s ease;
+}
+
+.btn:active{
+  transform:scale(.96);
+}
+
+.btn-ghost{
+  background:transparent;
+  color:var(--gold-soft);
+  border:1px solid rgba(217,166,85,.45);
+  box-shadow:none;
+}
+
+@media(min-width:600px){
+  .paper{
+    padding:40px 38px;
+    font-size:19px;
   }
-  *{box-sizing:border-box; margin:0; padding:0;}
-  html,body{width:100%; height:100%; overflow:hidden; background:var(--night); font-family:'Quicksand',sans-serif; touch-action:none; overscroll-behavior:none;}
-  #canvas-holder{position:fixed; inset:0; touch-action:none;}
-  canvas{display:block; touch-action:none;}
 
-  #fade{position:fixed; inset:0; background:var(--night); opacity:0; pointer-events:none; transition:opacity 1.1s ease; z-index:50;}
-  #fade.show{opacity:1; pointer-events:all;}
-  #black-out{position:fixed; inset:0; background:#000; opacity:0; pointer-events:none; transition:opacity 2.2s ease; z-index:200;}
-  #black-out.show{opacity:1; pointer-events:all;}
-
-  .ui-layer{position:fixed; inset:0; z-index:20; pointer-events:none;}
-  .ui-layer > *{pointer-events:all;}
-
-  .hint{position:fixed; left:50%; bottom:36px; transform:translateX(-50%); color:var(--gold-soft); font-weight:500; font-size:14px; letter-spacing:.06em; opacity:.85; text-shadow:0 2px 12px rgba(0,0,0,.6); text-align:center; z-index:15; max-width:80vw;}
-  .hint.pulse{animation:pulse 2.4s ease-in-out infinite;}
-  @keyframes pulse{0%,100%{opacity:.5} 50%{opacity:1}}
-
-  .title-mark{position:fixed; top:28px; left:50%; transform:translateX(-50%); font-family:'Cormorant Garamond'; font-style:italic; font-weight:500; font-size:20px; color:var(--gold-soft); text-shadow:0 2px 14px rgba(0,0,0,.7); z-index:15;}
-
-  .audio-badge{position:fixed; top:28px; right:24px; z-index:16; color:var(--gold-soft); font-size:12px; opacity:.7;}
-
-  /* modal shared */
-  .modal-back{position:fixed; inset:0; background:rgba(10,8,18,.75); backdrop-filter:blur(6px); display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity .5s ease; z-index:60;}
-  .modal-back.show{opacity:1; pointer-events:all;}
-  .modal-card{width:min(460px,88vw); background:linear-gradient(160deg,#1e1a2e,#140f22); border:1px solid rgba(217,166,85,.35); border-radius:18px; padding:36px 32px; text-align:center; box-shadow:0 30px 80px rgba(0,0,0,.6); transform:translateY(14px); transition:transform .5s ease; max-height:82vh; overflow-y:auto;}
-  .modal-back.show .modal-card{transform:translateY(0);}
-  .modal-card h2{font-family:'Cormorant Garamond'; font-weight:600; color:var(--gold-soft); font-size:25px; margin-bottom:10px;}
-  .modal-card p{color:#ece5f5; font-size:14px; line-height:1.55; margin-bottom:18px;}
-  .btn{display:inline-block; padding:12px 26px; border-radius:999px; border:none; background:var(--gold); color:#2b1d0c; font-weight:700; font-size:14px; cursor:pointer; transition:transform .2s, box-shadow .2s;}
-  .btn:hover{transform:translateY(-2px); box-shadow:0 10px 24px rgba(217,166,85,.35);}
-  .btn-ghost{background:transparent; color:var(--gold-soft); border:1px solid rgba(217,166,85,.4);}
-  .error-msg{color:var(--rose); font-size:13px; height:16px; margin-top:-4px; margin-bottom:10px;}
-
-  .date-row{display:flex; gap:8px; justify-content:center; margin-bottom:6px;}
-  .date-row select{flex:1; padding:12px 4px; border-radius:10px; border:1px solid rgba(217,166,85,.4); background:rgba(255,255,255,.05); color:var(--cream); font-family:'Quicksand'; font-weight:600; font-size:16px;}
-
-  .text-input{width:100%; padding:13px 16px; border-radius:10px; border:1px solid rgba(217,166,85,.4); background:rgba(255,255,255,.05); color:var(--cream); font-size:16px; text-align:center; font-family:'Quicksand'; font-weight:600; outline:none; margin-bottom:14px;}
-  .text-input:focus{border-color:var(--gold);}
-
-  /* letter / paper */
-  .paper{background:linear-gradient(180deg,#fbf3e0,#f3e4c4); color:#120a04; border-radius:6px; padding:38px 34px 30px; font-family:'Cormorant Garamond'; font-size:18px; font-weight:500; line-height:1.6; box-shadow:0 40px 100px rgba(0,0,0,.65); max-height:74vh; overflow-y:auto; text-align:left;}
-  .paper p{margin-bottom:14px;}
-  .paper .lead{font-size:23px; font-weight:600;}
-  .paper .close-line{font-style:italic; text-align:right; margin-top:8px;}
-
-  #welcome-screen{position:fixed; inset:0; z-index:100; background:radial-gradient(circle at 50% 30%, #221a35, #0a0714 75%); display:flex; align-items:center; justify-content:center; text-align:center; padding:24px;}
-  #welcome-screen .paper{max-width:520px;}
-
-  #ask-row{margin-top:26px; display:flex; gap:16px; justify-content:center;}
-
-  #voice-player{display:flex; flex-direction:column; align-items:center; gap:14px;}
-  #play-voice{width:64px; height:64px; border-radius:50%; background:var(--gold); border:none; cursor:pointer; font-size:22px; display:flex; align-items:center; justify-content:center; color:#2b1d0c; transition:transform .2s;}
-  #play-voice:hover{transform:scale(1.06);}
-  #voice-status{color:var(--gold-soft); font-size:13px;}
-
-  #yes-celebrate{position:fixed; inset:0; z-index:70; display:flex; align-items:center; justify-content:center; background:radial-gradient(circle at center, rgba(181,73,91,.25), rgba(13,13,28,.94)); opacity:0; pointer-events:none; transition:opacity 1s ease; text-align:center; flex-direction:column; gap:10px; padding:20px;}
-  #yes-celebrate.show{opacity:1; pointer-events:all;}
-  #yes-celebrate h1{font-family:'Cormorant Garamond'; font-style:italic; color:var(--gold-soft); font-size:40px;}
-  #yes-celebrate p{color:var(--cream); font-size:15px; max-width:480px;}
-
-  @media(max-width:520px){
-    .modal-card{padding:26px 18px;}
-    .paper{padding:26px 20px; font-size:16px;}
-    .date-row{flex-direction:row;}
+  .paper .lead{
+    font-size:30px;
   }
+
+  .hint{
+    font-size:14px;
+  }
+}
+
+/* =========================
+   MODALS
+========================= */
+
+.modal-back{
+  position:fixed;
+  inset:0;
+  z-index:100;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:18px;
+  background:rgba(7,5,15,.78);
+  backdrop-filter:blur(9px);
+  -webkit-backdrop-filter:blur(9px);
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .5s ease;
+}
+
+.modal-back.show{
+  opacity:1;
+  pointer-events:auto;
+}
+
+.modal-card{
+  width:min(460px,94vw);
+  max-height:88vh;
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+  padding:28px 20px;
+  border-radius:18px;
+  text-align:center;
+  background:linear-gradient(160deg,#211b31,#130f21);
+  border:1px solid rgba(217,166,85,.32);
+  box-shadow:0 30px 90px rgba(0,0,0,.65);
+  transform:translateY(18px) scale(.98);
+  transition:transform .5s ease;
+}
+
+.modal-back.show .modal-card{
+  transform:translateY(0) scale(1);
+}
+
+.modal-card h2{
+  font-family:'Cormorant Garamond',serif;
+  font-size:27px;
+  font-weight:600;
+  color:var(--gold-soft);
+  margin-bottom:10px;
+}
+
+.modal-card p{
+  color:#f3edf7;
+  font-size:13px;
+  line-height:1.65;
+  margin-bottom:19px;
+}
+
+.error-msg{
+  min-height:18px;
+  margin:-5px 0 10px;
+  color:#e8a1ae;
+  font-size:12px;
+}
+
+.date-row{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:7px;
+  margin-bottom:5px;
+}
+
+.date-row select{
+  width:100%;
+  min-height:48px;
+  padding:0 5px;
+  border-radius:10px;
+  border:1px solid rgba(217,166,85,.35);
+  background:rgba(255,255,255,.06);
+  color:var(--cream);
+  text-align:center;
+  outline:none;
+}
+
+.date-row select option{
+  background:#18132a;
+  color:white;
+}
+
+.text-input{
+  width:100%;
+  min-height:50px;
+  padding:13px 15px;
+  border-radius:11px;
+  border:1px solid rgba(217,166,85,.4);
+  background:rgba(255,255,255,.06);
+  color:white;
+  text-align:center;
+  outline:none;
+  margin-bottom:13px;
+}
+
+.text-input::placeholder{
+  color:rgba(255,255,255,.45);
+}
+
+.text-input:focus{
+  border-color:var(--gold);
+}
+
+/* Birthday paper inside modal */
+
+#birthday-paper{
+  width:100%;
+  max-height:58vh;
+  box-shadow:none;
+  padding:25px 20px;
+}
+
+#birthday-paper + div{
+  position:relative;
+  z-index:2;
+}
+
+/* =========================
+   VOICE PLAYER
+========================= */
+
+#voice-player{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:13px;
+  padding:8px 0;
+}
+
+#play-voice{
+  width:72px;
+  height:72px;
+  border:0;
+  border-radius:50%;
+  background:var(--gold);
+  color:#241607;
+  font-size:24px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  box-shadow:0 0 0 0 rgba(217,166,85,.3);
+  animation:voicePulse 2.5s infinite;
+}
+
+@keyframes voicePulse{
+  0%{box-shadow:0 0 0 0 rgba(217,166,85,.35)}
+  70%{box-shadow:0 0 0 18px rgba(217,166,85,0)}
+  100%{box-shadow:0 0 0 0 rgba(217,166,85,0)}
+}
+
+#voice-status{
+  color:var(--gold-soft);
+  font-size:12px;
+}
+
+/* =========================
+   FINAL ASK
+========================= */
+
+#letter-modal .modal-card{
+  background:transparent;
+  border:0;
+  box-shadow:none;
+  padding:8px;
+  width:min(560px,96vw);
+}
+
+#letter-paper{
+  width:100%;
+  max-height:80vh;
+}
+
+#letter-text p{
+  opacity:0;
+  transform:translateY(5px);
+  transition:opacity 1s ease,transform 1s ease;
+}
+
+#letter-text p.visible{
+  opacity:1;
+  transform:translateY(0);
+}
+
+#ask-row{
+  display:none;
+  flex-wrap:wrap;
+  gap:10px;
+  justify-content:center;
+  margin-top:25px;
+  position:relative;
+  z-index:5;
+}
+
+#ask-row .btn{
+  flex:1 1 160px;
+}
+
+/* =========================
+   YES SCREEN
+========================= */
+
+#yes-celebrate{
+  position:fixed;
+  inset:0;
+  z-index:250;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:12px;
+  padding:30px;
+  text-align:center;
+  background:
+    radial-gradient(circle at center,
+      rgba(181,73,91,.32),
+      rgba(13,13,28,.97) 75%);
+  opacity:0;
+  pointer-events:none;
+  transition:opacity 1.2s ease;
+}
+
+#yes-celebrate.show{
+  opacity:1;
+  pointer-events:auto;
+}
+
+#yes-celebrate h1{
+  font-family:'Cormorant Garamond',serif;
+  font-style:italic;
+  font-weight:500;
+  font-size:clamp(43px,13vw,72px);
+  color:var(--gold-soft);
+  text-shadow:0 5px 30px rgba(217,166,85,.2);
+}
+
+#yes-celebrate p{
+  max-width:450px;
+  color:var(--cream);
+  font-size:14px;
+  line-height:1.7;
+}
+
+/* =========================
+   MOBILE
+========================= */
+
+@media(max-width:420px){
+  .modal-card{
+    padding:24px 16px;
+  }
+
+  .modal-card h2{
+    font-size:25px;
+  }
+
+  .paper{
+    padding:25px 18px;
+    font-size:17px;
+  }
+
+  .paper .lead{
+    font-size:25px;
+  }
+
+  #ask-row{
+    flex-direction:column;
+  }
+
+  #ask-row .btn{
+    width:100%;
+  }
+}
+
+@media(orientation:landscape) and (max-height:500px){
+  .modal-card{
+    max-height:92vh;
+    padding:18px;
+  }
+
+  .paper{
+    max-height:82vh;
+  }
+}
 </style>
+
 </head>
+
 <body>
 
+<!-- =========================
+     WELCOME
+========================= -->
+
 <div id="welcome-screen">
+  <div class="welcome-glow"></div>
+
   <div class="paper" id="welcome-paper">
-    <p class="lead" id="welcome-title"></p>
-    <p id="welcome-body"></p>
-    <button class="btn" id="welcome-btn">thank you</button>
+    <div class="paper-content">
+      <p class="lead" id="welcome-title"></p>
+      <p id="welcome-body"></p>
+
+```
+  <div style="margin-top:25px;">
+    <button class="btn" id="welcome-btn"></button>
+  </div>
+</div>
+```
+
   </div>
 </div>
 
+<!-- THREE.JS -->
+
 <div id="canvas-holder"></div>
+
+<!-- TRANSITIONS -->
+
 <div id="fade"></div>
 <div id="black-out"></div>
 
+<!-- GLOBAL UI -->
+
 <div class="ui-layer">
-  <div class="title-mark" id="title-mark">for Mar</div>
-  <div class="hint pulse" id="hint"></div>
+  <div class="title-mark">for Mar</div>
   <div class="audio-badge" id="audio-badge"></div>
+  <div class="hint pulse" id="hint"></div>
 </div>
 
-<!-- date quiz modal -->
+<!-- =========================
+     DATE QUIZ
+========================= -->
+
 <div class="modal-back" id="date-modal">
   <div class="modal-card">
-    <h2>a box on the table</h2>
-    <p id="date-question">What day did we first chat?</p>
-    <div class="date-row">
-      <select id="date-month"></select>
-      <select id="date-day"></select>
-      <select id="date-year"></select>
-    </div>
-    <div class="error-msg" id="date-error"></div>
-    <button class="btn" id="date-submit">unlock</button>
+
+```
+<h2>A box on the table</h2>
+
+<p id="date-question">
+  What day did we first chat — the day that started all this?
+</p>
+
+<div class="date-row">
+  <select id="date-month"></select>
+  <select id="date-day"></select>
+  <select id="date-year"></select>
+</div>
+
+<div class="error-msg" id="date-error"></div>
+
+<button class="btn" id="date-submit">
+  unlock
+</button>
+```
+
   </div>
 </div>
 
-<!-- birthday letter modal -->
+<!-- =========================
+     BIRTHDAY LETTER
+========================= -->
+
 <div class="modal-back" id="birthday-modal">
   <div class="modal-card">
-    <div class="paper" id="birthday-paper"></div>
-    <div style="margin-top:18px; color: #000;"><button class="btn" id="birthday-continue">continue</button></div>
+
+```
+<div class="paper" id="birthday-paper"></div>
+
+<div style="margin-top:18px;">
+  <button class="btn" id="birthday-continue">
+    continue
+  </button>
+</div>
+```
+
   </div>
 </div>
 
-<!-- location question modal -->
+<!-- =========================
+     LOCATION
+========================= -->
+
 <div class="modal-back" id="location-modal">
   <div class="modal-card">
-    <h2>one more door</h2>
-    <p>Where did we finally meet in person — the place we're celebrating at?</p>
-    <input class="text-input" id="location-field" placeholder="type your answer" autocomplete="off">
-    <div class="error-msg" id="location-error"></div>
-    <button class="btn" id="location-submit">open</button>
+
+```
+<h2>one more door</h2>
+
+<p id="location-question">
+  Where did we finally meet in person — the place we're celebrating at?
+</p>
+
+<input
+  class="text-input"
+  id="location-field"
+  type="text"
+  placeholder="type your answer"
+  autocomplete="off"
+  autocapitalize="words"
+  spellcheck="false"
+>
+
+<div class="error-msg" id="location-error"></div>
+
+<button class="btn" id="location-submit">
+  open
+</button>
+```
+
   </div>
 </div>
 
-<!-- voice message modal -->
+<!-- =========================
+     VOICE MESSAGE
+========================= -->
+
 <div class="modal-back" id="voice-modal">
   <div class="modal-card">
-    <h2>a message, in my voice</h2>
-    <p>Press play whenever you're ready.</p>
-    <div id="voice-player">
-      <button id="play-voice">▶</button>
-      <div id="voice-status">tap to listen</div>
-    </div>
-    <div style="margin-top:22px;"><button class="btn btn-ghost" id="voice-continue" style="display:none;">continue</button></div>
+
+```
+<h2>a message, in my voice</h2>
+
+<p>
+  There is something I've wanted to tell you.
+  Take your time.
+</p>
+
+<div id="voice-player">
+
+  <button id="play-voice" aria-label="Play voice message">
+    ▶
+  </button>
+
+  <div id="voice-status">
+    tap to listen
+  </div>
+
+</div>
+
+<div style="margin-top:24px;">
+  <button
+    class="btn btn-ghost"
+    id="voice-continue"
+    style="display:none;"
+  >
+    continue
+  </button>
+</div>
+```
+
   </div>
 </div>
 
-<!-- final letter modal -->
+<!-- =========================
+     FINAL LETTER
+========================= -->
+
 <div class="modal-back" id="letter-modal">
+
   <div class="modal-card">
-    <div class="paper" id="letter-paper">
-      <div id="letter-text"></div>
-      <div id="ask-row" style="display:none; color: #000;">
-        <button class="btn" id="yes-btn">Yes I would love to</button>
-        <button class="btn btn-ghost" id="no-btn">I'm afraid I can't</button>
-      </div>
-    </div>
+
+```
+<div class="paper" id="letter-paper">
+
+  <div id="letter-text"></div>
+
+  <div id="ask-row">
+
+    <button class="btn" id="yes-btn">
+      Yes, I would love to ❤️
+    </button>
+
+    <button class="btn btn-ghost" id="no-btn">
+      I'm afraid I can't
+    </button>
+
   </div>
+
 </div>
+```
+
+  </div>
+
+</div>
+
+<!-- =========================
+     YES
+========================= -->
 
 <div id="yes-celebrate">
-  <h1>she said yes.</h1>
+
+  <h1>she said yes. ❤️</h1>
+
   <p id="yes-thankyou"></p>
+
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
 <script>
-/* =========================================================================
-   CONFIG — edit freely
-========================================================================= */
+
+/* =========================================================
+   CONFIGURATION
+========================================================= */
+
 const CONFIG = {
-  welcome: {
-    title: "Welcome to this beautiful home!",
-    body: "I hope you absolutely love staying here and enjoy every moment of your time in the place, Mar 💕",
-    buttonText: "thank you"
-  },
-  doorLabel: "our memories ❤️",
-  doorInstruction: "open the door to step inside",
 
-  dateQuiz: {
-    question: "What was the first day we chatted — the day that started all this?",
-    month: 6, day: 25, year: 2026 // June 25, 2026
+  welcome:{
+    title:"Welcome to this beautiful home!",
+    body:"I hope you absolutely love staying here and enjoy every moment of your time in the place, Mar 💕",
+    buttonText:"thank you"
   },
 
-  locationQuestion: {
-    question: "Where did we finally meet in person — the place we're celebrating at?",
-    answer: "bella pasta"
+  doorLabel:"our memories ❤️",
+
+  doorInstruction:"open the door to step inside",
+
+  dateQuiz:{
+    question:"What was the first day we chatted — the day that started all this?",
+    month:6,
+    day:25,
+    year:2026
   },
 
-  // media for the rotating frames in the photo room — put these files in a "media" folder
-  // next to this file. Frame count always matches this list's length exactly — no empty frames.
-  photoRoomMedia: [
-    { type: 'video', src: 'media/clip2.mp4' },
-    { type: 'video', src: 'media/clip3.mp4' },
-    { type: 'video', src: 'media/clip4.mp4' },
-    { type: 'video', src: 'media/clip5.mp4' },
-    { type: 'video', src: 'media/clip6.mp4' },
-    { type: 'video', src: 'media/clip7.mp4' },
-    { type: 'video', src: 'media/clip8.mp4' },
-    { type: 'image', src: 'media/photo1.jpg' },
-    { type: 'image', src: 'media/photo2.PNG' },
-    { type: 'image', src: 'media/photo3.PNG' }
+  locationQuestion:{
+    question:"Where did we finally meet in person — the place we're celebrating at?",
+    answer:"bella pasta"
+  },
+
+  /* EXACTLY ONE FRAME PER MEDIA ITEM */
+  photoRoomMedia:[
+    {type:"video",src:"media/clip2.mp4"},
+    {type:"video",src:"media/clip3.mp4"},
+    {type:"video",src:"media/clip4.mp4"},
+    {type:"video",src:"media/clip5.mp4"},
+    {type:"video",src:"media/clip6.mp4"},
+    {type:"video",src:"media/clip7.mp4"},
+    {type:"video",src:"media/clip8.mp4"},
+    {type:"image",src:"media/photo1.jpg"},
+    {type:"image",src:"media/photo2.PNG"},
+    {type:"image",src:"media/photo3.PNG"}
   ],
 
-  birthdayLetter: [
+  birthdayLetter:[
     "Happy Birthday, Mari!",
+
     "On your special day, I just want to take a moment to remind you of how extraordinary you truly are. You bring a warmth and light into the room that instantly makes everything feel brighter and more at ease. Having you in my life is a constant reminder of how beautiful, meaningful, and joyful connection can be.",
+
     "I hope this year brings you all the happiness, peace, and big, bold success you so naturally deserve. May you keep dreaming big, chasing what sets your soul on fire, and being the incredible person you are.",
+
     "Thank you for being you, for every shared smile, and for making the world a genuinely better place just by being in it. Here's to a year filled with unforgettable moments, endless laughter, and everything your heart desires.",
+
     "Have the happiest of birthdays, Mari! ❤️‍🔥"
   ],
 
-  finalMessage: [
+  finalMessage:[
     "Mar,",
+
     "It's only been two months, but somehow you've made your way into my everyday thoughts. I don't know if it's the way you talk about the little things like they matter, or the way I find myself smiling at my phone before I even realize why, but something about you just feels different. Easy. Right.",
+
     "I built this whole thing because words alone didn't feel like enough, and because you deserve more than a text.",
+
     "So here it is, as simply and honestly as I can say it:",
+
     "I like you. A lot. And I'd love to know what it's like to call you mine.",
-    "Will you be my girlfriend Mar?"
+
+    "Will you be my girlfriend, Mar?"
   ],
 
-  yesThankYou: "Thank you for saying yes, Mar. Every part of this was worth it just to hear that.",
+  yesThankYou:
+    "Thank you for saying yes, Mar. Every part of this was worth it just to hear that. ❤️",
 
-  // audio: one continuous background track plays through the whole experience,
-  // ducking out only while she plays your voice message.
-  audio: {
-    background: "audio/Ed-Sheeran-Thinking-Out-Loud-Official-Music-Video.m4a",
-    voiceMessage: "audio/nahi-abi-voice-for-mar-1788114826444_ncKSLAgP.m4a"
+  audio:{
+    background:"audio/Ed-Sheeran-Thinking-Out-Loud-Official-Music-Video.m4a",
+
+    voiceMessage:
+      "audio/nahi-abi-voice-for-mar-1788114826444_ncKSLAgP.m4a"
   }
-};
-/* NOTE ON AUDIO: create an "audio" folder next to this file containing your two
-   files, named exactly as above. If a file is missing, that step still works —
-   it just has no sound, and the voice-message step shows a "continue" button
-   after a short wait as a fallback. */
 
-/* =========================================================================
-   AUDIO MANAGER
-========================================================================= */
+};
+
+
+/* =========================================================
+   AUDIO
+========================================================= */
+
 const bgMusic = new Audio(CONFIG.audio.background);
+
 bgMusic.loop = true;
 bgMusic.volume = 0;
 
 const voice = new Audio(CONFIG.audio.voiceMessage);
+
 voice.loop = false;
+voice.preload = "auto";
+voice.volume = 1;
 
-function fadeAudio(el,to,ms){
-  const start = el.volume, t0 = performance.now();
-  function step(t){
-    const p = Math.min(1,(t-t0)/ms);
-    el.volume = start + (to-start)*p;
-    if(p<1) requestAnimationFrame(step);
+let bgTargetVolume = 0.45;
+let audioFadeFrame = null;
+
+function fadeAudio(audio,target,duration){
+
+  if(audioFadeFrame){
+    cancelAnimationFrame(audioFadeFrame);
   }
-  requestAnimationFrame(step);
-}
-function startBackgroundMusic(){
-  bgMusic.play().catch(()=>{});
-  fadeAudio(bgMusic, 0.5, 1800);
-  document.getElementById('audio-badge').textContent = '♪ thinking out loud';
-}
-function duckBackgroundMusic(){
-  fadeAudio(bgMusic, 0, 900);
-}
-function resumeBackgroundMusic(){
-  fadeAudio(bgMusic, 0.5, 900);
-  document.getElementById('audio-badge').textContent = '♪ thinking out loud';
-}
-function stopBackgroundMusic(ms=1500){
-  fadeAudio(bgMusic, 0, ms);
+
+  const start = audio.volume;
+  const started = performance.now();
+
+  function step(now){
+
+    const progress =
+      Math.min(1,(now-started)/duration);
+
+    audio.volume =
+      start + (target-start)*progress;
+
+    if(progress < 1){
+      audioFadeFrame =
+        requestAnimationFrame(step);
+    }
+  }
+
+  audioFadeFrame =
+    requestAnimationFrame(step);
 }
 
-/* =========================================================================
-   THREE.JS BASE SETUP
-========================================================================= */
-const holder = document.getElementById('canvas-holder');
-const renderer = new THREE.WebGLRenderer({antialias:true});
-renderer.setPixelRatio(Math.min(devicePixelRatio,2));
-renderer.setSize(innerWidth, innerHeight);
+
+function startBackgroundMusic(){
+
+  bgMusic.play()
+    .then(()=>{
+      fadeAudio(bgMusic,bgTargetVolume,1800);
+    })
+    .catch(()=>{
+      console.log("Background music waiting for user gesture.");
+    });
+
+  document.getElementById("audio-badge").textContent =
+    "♪ thinking out loud";
+}
+
+
+function duckBackgroundMusic(){
+
+  fadeAudio(bgMusic,0,700);
+}
+
+
+function resumeBackgroundMusic(){
+
+  bgMusic.play().catch(()=>{});
+
+  fadeAudio(bgMusic,bgTargetVolume,1000);
+
+  document.getElementById("audio-badge").textContent =
+    "♪ thinking out loud";
+}
+
+
+function stopBackgroundMusic(){
+
+  fadeAudio(bgMusic,0,1500);
+
+}
+
+
+/* =========================================================
+   THREE.JS
+========================================================= */
+
+const holder =
+  document.getElementById("canvas-holder");
+
+const renderer =
+  new THREE.WebGLRenderer({
+    antialias:true,
+    alpha:false,
+    powerPreference:"high-performance"
+  });
+
+renderer.setPixelRatio(
+  Math.min(window.devicePixelRatio || 1,2)
+);
+
+renderer.setSize(
+  window.innerWidth,
+  window.innerHeight
+);
+
 holder.appendChild(renderer.domElement);
 
-const camera = new THREE.PerspectiveCamera(55, innerWidth/innerHeight, 0.1, 200);
-let scene = new THREE.Scene();
-camera.rotation.order = 'YXZ';
 
-window.addEventListener('resize', ()=>{
-  camera.aspect = innerWidth/innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(innerWidth, innerHeight);
-});
+const camera =
+  new THREE.PerspectiveCamera(
+    55,
+    window.innerWidth/window.innerHeight,
+    0.1,
+    200
+  );
 
-const raycaster = new THREE.Raycaster();
-const mouse = new THREE.Vector2();
-let clickables = [];
+camera.rotation.order="YXZ";
 
-/* look-around (360) state — used in rooms where lookMode is enabled */
-const look = {enabled:false, yaw:0, pitch:0, dragging:false, lastX:0, lastY:0, dragDist:0};
 
-renderer.domElement.addEventListener('pointerdown', (e)=>{
-  look.dragging = true; look.lastX = e.clientX; look.lastY = e.clientY; look.dragDist = 0;
-});
-window.addEventListener('pointerup', ()=>{ look.dragging = false; });
-window.addEventListener('pointermove', (e)=>{
-  mouse.x = (e.clientX/innerWidth)*2-1;
-  mouse.y = -(e.clientY/innerHeight)*2+1;
-  if(look.enabled && look.dragging){
-    const dx = e.clientX-look.lastX, dy = e.clientY-look.lastY;
-    look.dragDist += Math.abs(dx)+Math.abs(dy);
-    look.yaw -= dx*0.0032;
-    look.pitch -= dy*0.0025;
-    look.pitch = Math.max(-0.45, Math.min(0.45, look.pitch));
-    look.lastX = e.clientX; look.lastY = e.clientY;
+let scene =
+  new THREE.Scene();
+
+
+const raycaster =
+  new THREE.Raycaster();
+
+const mouse =
+  new THREE.Vector2();
+
+
+let clickables=[];
+
+let animationFunctions=[];
+
+
+/* =========================================================
+   LOOK / TOUCH
+========================================================= */
+
+const look={
+  enabled:false,
+  yaw:0,
+  pitch:0,
+  dragging:false,
+  lastX:0,
+  lastY:0,
+  dragDistance:0
+};
+
+
+function resetLook(){
+
+  look.yaw=0;
+  look.pitch=0;
+  look.dragging=false;
+  look.dragDistance=0;
+
+}
+
+
+renderer.domElement.addEventListener(
+  "pointerdown",
+  event=>{
+
+    if(!look.enabled) return;
+
+    look.dragging=true;
+
+    look.lastX=event.clientX;
+    look.lastY=event.clientY;
+
+    look.dragDistance=0;
+
+    renderer.domElement.style.cursor="grabbing";
+
+  },
+  {passive:true}
+);
+
+
+window.addEventListener(
+  "pointermove",
+  event=>{
+
+    mouse.x =
+      (event.clientX/window.innerWidth)*2-1;
+
+    mouse.y =
+      -(event.clientY/window.innerHeight)*2+1;
+
+    if(!look.enabled || !look.dragging)
+      return;
+
+    const dx =
+      event.clientX-look.lastX;
+
+    const dy =
+      event.clientY-look.lastY;
+
+    look.dragDistance +=
+      Math.abs(dx)+Math.abs(dy);
+
+    look.yaw -= dx*0.004;
+
+    look.pitch -= dy*0.003;
+
+    look.pitch =
+      Math.max(
+        -0.55,
+        Math.min(0.55,look.pitch)
+      );
+
+    look.lastX=event.clientX;
+    look.lastY=event.clientY;
+
+  },
+  {passive:true}
+);
+
+
+window.addEventListener(
+  "pointerup",
+  ()=>{
+    look.dragging=false;
+
+    if(look.enabled){
+      renderer.domElement.style.cursor="grab";
+    }
   }
-  raycaster.setFromCamera(mouse, camera);
-  const hits = raycaster.intersectObjects(clickables.map(c=>c.mesh), true);
-  renderer.domElement.style.cursor = hits.length ? 'pointer' : (look.enabled ? 'grab' : 'default');
-});
+);
 
-renderer.domElement.addEventListener('click', (e)=>{
-  if(look.enabled && look.dragDist > 8){ look.dragDist = 0; return; }
-  look.dragDist = 0;
-  // recompute from the actual click position — a tap doesn't fire pointermove first,
-  // so `mouse` can be stale on touch devices without this
-  mouse.x = (e.clientX/innerWidth)*2-1;
-  mouse.y = -(e.clientY/innerHeight)*2+1;
-  raycaster.setFromCamera(mouse, camera);
-  const hits = raycaster.intersectObjects(clickables.map(c=>c.mesh), true);
-  if(hits.length){
-    let obj = hits[0].object;
-    while(obj && !clickables.find(c=>c.mesh===obj)) obj = obj.parent;
-    const found = clickables.find(c=>c.mesh===obj);
-    if(found) found.onClick();
+
+renderer.domElement.addEventListener(
+  "click",
+  event=>{
+
+    if(
+      look.enabled &&
+      look.dragDistance>10
+    ){
+
+      look.dragDistance=0;
+      return;
+
+    }
+
+    mouse.x =
+      (event.clientX/window.innerWidth)*2-1;
+
+    mouse.y =
+      -(event.clientY/window.innerHeight)*2+1;
+
+    raycaster.setFromCamera(mouse,camera);
+
+    const objects =
+      clickables.map(item=>item.mesh);
+
+    const hits =
+      raycaster.intersectObjects(objects,true);
+
+    if(!hits.length) return;
+
+    let object=hits[0].object;
+
+    while(
+      object &&
+      !clickables.some(
+        item=>item.mesh===object
+      )
+    ){
+
+      object=object.parent;
+
+    }
+
+    const clickable =
+      clickables.find(
+        item=>item.mesh===object
+      );
+
+    if(clickable){
+      clickable.onClick();
+    }
+
   }
-});
+);
+
+
+/* =========================================================
+   RESIZE
+========================================================= */
+
+window.addEventListener(
+  "resize",
+  ()=>{
+
+    camera.aspect =
+      window.innerWidth/window.innerHeight;
+
+    camera.updateProjectionMatrix();
+
+    renderer.setSize(
+      window.innerWidth,
+      window.innerHeight
+    );
+
+  }
+);
+
+
+/* =========================================================
+   UTILITIES
+========================================================= */
 
 function clearScene(){
-  scene.traverse(obj=>{
-    if(obj.geometry) obj.geometry.dispose();
-    if(obj.material){
-      if(Array.isArray(obj.material)) obj.material.forEach(m=>m.dispose());
-      else obj.material.dispose();
+
+  scene.traverse(
+    object=>{
+
+      if(object.geometry){
+        object.geometry.dispose();
+      }
+
+      if(object.material){
+
+        if(Array.isArray(object.material)){
+
+          object.material.forEach(
+            material=>material.dispose()
+          );
+
+        }else{
+
+          object.material.dispose();
+
+        }
+
+      }
+
     }
-  });
-  scene = new THREE.Scene();
-  clickables = [];
-  look.enabled = false; look.yaw = 0; look.pitch = 0; look.dragDist = 0;
+  );
+
+  scene=new THREE.Scene();
+
+  clickables=[];
+
+  animationFunctions=[];
+
+  look.enabled=false;
+
+  resetLook();
+
 }
+
 
 function fadeTransition(callback){
-  const fade = document.getElementById('fade');
-  fade.classList.add('show');
-  setTimeout(()=>{
-    callback();
-    setTimeout(()=>fade.classList.remove('show'), 60);
-  }, 1050);
+
+  const fade =
+    document.getElementById("fade");
+
+  fade.classList.add("show");
+
+  setTimeout(
+    ()=>{
+
+      callback();
+
+      setTimeout(
+        ()=>{
+          fade.classList.remove("show");
+        },
+        120
+      );
+
+    },
+    900
+  );
+
 }
 
-function box(w,h,d,color,opts={}){
-  const geo = new THREE.BoxGeometry(w,h,d);
-  const mat = new THREE.MeshStandardMaterial({color, roughness:opts.roughness??0.75, metalness:opts.metalness??0.05, emissive:opts.emissive??0x000000, emissiveIntensity:opts.emissiveIntensity??0});
-  return new THREE.Mesh(geo,mat);
+
+function box(
+  width,
+  height,
+  depth,
+  color,
+  options={}
+){
+
+  const geometry =
+    new THREE.BoxGeometry(
+      width,
+      height,
+      depth
+    );
+
+  const material =
+    new THREE.MeshStandardMaterial({
+      color,
+      roughness:
+        options.roughness ?? 0.75,
+      metalness:
+        options.metalness ?? 0.05,
+      emissive:
+        options.emissive ?? 0x000000,
+      emissiveIntensity:
+        options.emissiveIntensity ?? 0
+    });
+
+  return new THREE.Mesh(
+    geometry,
+    material
+  );
+
 }
 
-/* simple canvas-texture text sprite, e.g. for the door label */
-function textSprite(text, {size=64, color='#f0d9a8', font='600 48px Quicksand, sans-serif', w=512, h=128}={}){
-  const canvas = document.createElement('canvas');
-  canvas.width = w; canvas.height = h;
-  const ctx = canvas.getContext('2d');
-  ctx.font = font;
-  ctx.fillStyle = color;
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.shadowColor = 'rgba(0,0,0,.8)';
-  ctx.shadowBlur = 10;
-  ctx.fillText(text, w/2, h/2);
-  const tex = new THREE.CanvasTexture(canvas);
-  const mat = new THREE.SpriteMaterial({map:tex, transparent:true});
-  const sprite = new THREE.Sprite(mat);
-  sprite.scale.set(3.2, 0.8, 1);
+
+function textSprite(
+  text,
+  options={}
+){
+
+  const width=768;
+  const height=160;
+
+  const canvas=
+    document.createElement("canvas");
+
+  canvas.width=width;
+  canvas.height=height;
+
+  const context=
+    canvas.getContext("2d");
+
+  context.font =
+    options.font ||
+    "600 52px Quicksand";
+
+  context.fillStyle =
+    options.color ||
+    "#f0d9a8";
+
+  context.textAlign="center";
+  context.textBaseline="middle";
+
+  context.shadowColor=
+    "rgba(0,0,0,.85)";
+
+  context.shadowBlur=12;
+
+  context.fillText(
+    text,
+    width/2,
+    height/2
+  );
+
+  const texture=
+    new THREE.CanvasTexture(canvas);
+
+  const material=
+    new THREE.SpriteMaterial({
+      map:texture,
+      transparent:true
+    });
+
+  const sprite=
+    new THREE.Sprite(material);
+
+  sprite.scale.set(4.3,.9,1);
+
   return sprite;
+
 }
 
-let animLoopFns = [];
-function animate(t){
+
+/* =========================================================
+   ANIMATION LOOP
+========================================================= */
+
+function animate(time){
+
   requestAnimationFrame(animate);
+
   if(look.enabled){
-    camera.rotation.x = look.pitch;
-    camera.rotation.y = look.yaw;
+
+    camera.rotation.x=look.pitch;
+    camera.rotation.y=look.yaw;
+
   }
-  animLoopFns.forEach(fn=>fn(t));
-  renderer.render(scene, camera);
+
+  animationFunctions.forEach(
+    function(fn){
+      fn(time);
+    }
+  );
+
+  renderer.render(
+    scene,
+    camera
+  );
+
 }
+
 requestAnimationFrame(animate);
 
-/* =========================================================================
-   WELCOME SCREEN
-========================================================================= */
-document.getElementById('welcome-title').textContent = CONFIG.welcome.title;
-document.getElementById('welcome-body').textContent = CONFIG.welcome.body;
-document.getElementById('welcome-btn').textContent = CONFIG.welcome.buttonText;
-document.getElementById('welcome-btn').addEventListener('click', ()=>{
-  startBackgroundMusic(); // first real user gesture — safest point to start audio
-  const w = document.getElementById('welcome-screen');
-  w.style.transition = 'opacity 1s ease';
-  w.style.opacity = '0';
-  setTimeout(()=>{ w.style.display='none'; buildExterior(); }, 950);
-});
 
-/* =========================================================================
+/* =========================================================
+   WELCOME
+========================================================= */
+
+document.getElementById("welcome-title")
+  .textContent=CONFIG.welcome.title;
+
+document.getElementById("welcome-body")
+  .textContent=CONFIG.welcome.body;
+
+document.getElementById("welcome-btn")
+  .textContent=CONFIG.welcome.buttonText;
+
+
+document.getElementById("welcome-btn")
+  .addEventListener(
+    "click",
+    ()=>{
+
+      startBackgroundMusic();
+
+      const welcome=
+        document.getElementById("welcome-screen");
+
+      welcome.style.opacity="0";
+
+      setTimeout(
+        ()=>{
+          welcome.style.display="none";
+          buildExterior();
+        },
+        1100
+      );
+
+    }
+  );
+
+
+/* =========================================================
    SCENE 1 — EXTERIOR
-========================================================================= */
+========================================================= */
+
 function buildExterior(){
+
   clearScene();
-  animLoopFns = [];
-  scene.background = new THREE.Color(0x0a0a18);
-  scene.fog = new THREE.FogExp2(0x0a0a18, 0.028);
 
-  camera.position.set(0,2.4,11);
+  scene.background=
+    new THREE.Color(0x090914);
+
+  scene.fog=
+    new THREE.FogExp2(
+      0x090914,
+      0.025
+    );
+
+
+  camera.position.set(
+    0,
+    2.4,
+    11
+  );
+
   camera.rotation.set(0,0,0);
-  camera.lookAt(0,2.2,0);
 
-  const starGeo = new THREE.BufferGeometry();
-  const starCount = 450;
-  const positions = new Float32Array(starCount*3);
-  for(let i=0;i<starCount;i++){
-    positions[i*3] = (Math.random()-0.5)*80;
-    positions[i*3+1] = Math.random()*40+2;
-    positions[i*3+2] = (Math.random()-0.5)*80-10;
+  camera.lookAt(
+    0,
+    2.2,
+    0
+  );
+
+
+  /* STARS */
+
+  const starGeometry=
+    new THREE.BufferGeometry();
+
+  const starCount=500;
+
+  const positions=
+    new Float32Array(
+      starCount*3
+    );
+
+  for(
+    let i=0;
+    i<starCount;
+    i++
+  ){
+
+    positions[i*3]=
+      (Math.random()-.5)*90;
+
+    positions[i*3+1]=
+      Math.random()*40+2;
+
+    positions[i*3+2]=
+      (Math.random()-.5)*80-10;
+
   }
-  starGeo.setAttribute('position', new THREE.BufferAttribute(positions,3));
-  const stars = new THREE.Points(starGeo, new THREE.PointsMaterial({color:0xf0d9a8, size:0.12, transparent:true, opacity:0.85}));
-  scene.add(stars);
-  animLoopFns.push((t)=>{ stars.rotation.y = t*0.00002; });
 
-  const ground = box(60,0.4,60,0x141426,{roughness:0.9});
-  ground.position.y = -0.2;
+  starGeometry.setAttribute(
+    "position",
+    new THREE.BufferAttribute(
+      positions,
+      3
+    )
+  );
+
+  const stars=
+    new THREE.Points(
+      starGeometry,
+      new THREE.PointsMaterial({
+        color:0xf0d9a8,
+        size:.12,
+        transparent:true,
+        opacity:.8
+      })
+    );
+
+  scene.add(stars);
+
+  animationFunctions.push(
+    time=>{
+      stars.rotation.y=
+        time*.00002;
+    }
+  );
+
+
+  /* GROUND */
+
+  const ground=
+    box(
+      60,
+      .4,
+      60,
+      0x121221,
+      {roughness:.9}
+    );
+
+  ground.position.y=-.2;
+
   scene.add(ground);
 
-  const moon = new THREE.Mesh(new THREE.SphereGeometry(1.6,24,24), new THREE.MeshBasicMaterial({color:0xf5ecd8}));
-  moon.position.set(9,12,-20);
-  scene.add(moon);
-  const moonLight = new THREE.PointLight(0xf5ecd8,0.6,60);
-  moonLight.position.copy(moon.position);
-  scene.add(moonLight);
-  scene.add(new THREE.AmbientLight(0x2a2a4a,0.7));
 
-  const house = new THREE.Group();
-  const body = box(6,4,5,0x2b2440,{roughness:0.8});
-  body.position.y = 2;
+  /* MOON */
+
+  const moon=
+    new THREE.Mesh(
+      new THREE.SphereGeometry(
+        1.6,
+        24,
+        24
+      ),
+      new THREE.MeshBasicMaterial({
+        color:0xf5ecd8
+      })
+    );
+
+  moon.position.set(
+    9,
+    12,
+    -20
+  );
+
+  scene.add(moon);
+
+
+  const moonLight=
+    new THREE.PointLight(
+      0xf5ecd8,
+      .65,
+      60
+    );
+
+  moonLight.position.copy(
+    moon.position
+  );
+
+  scene.add(moonLight);
+
+
+  scene.add(
+    new THREE.AmbientLight(
+      0x2a2a4a,
+      .75
+    )
+  );
+
+
+  /* HOUSE */
+
+  const house=
+    new THREE.Group();
+
+
+  const body=
+    box(
+      6,
+      4,
+      5,
+      0x2b2440,
+      {roughness:.8}
+    );
+
+  body.position.y=2;
+
   house.add(body);
-  const roof = new THREE.Mesh(new THREE.ConeGeometry(4.6,2.4,4), new THREE.MeshStandardMaterial({color:0x1c1730, roughness:0.85}));
-  roof.rotation.y = Math.PI/4;
-  roof.position.y = 5.2;
+
+
+  const roof=
+    new THREE.Mesh(
+      new THREE.ConeGeometry(
+        4.6,
+        2.4,
+        4
+      ),
+      new THREE.MeshStandardMaterial({
+        color:0x1c1730,
+        roughness:.85
+      })
+    );
+
+  roof.rotation.y=
+    Math.PI/4;
+
+  roof.position.y=5.2;
+
   house.add(roof);
 
-  function windowLight(x,y){
-    const w = box(0.9,0.9,0.1,0xf0d9a8,{emissive:0xd9a655, emissiveIntensity:1.2});
-    w.position.set(x,y,2.51);
-    house.add(w);
-    const light = new THREE.PointLight(0xf0d9a8,0.5,6);
-    light.position.set(x,y,3.2);
-    house.add(light);
-  }
-  windowLight(-2,2.6); windowLight(2,2.6);
 
-  const doorGroup = new THREE.Group();
-  const door = box(1.3,2.4,0.15,0xb5495b,{roughness:0.6, emissive:0x6e2130, emissiveIntensity:0.25});
-  door.position.set(0,1.2,2.55);
+  function windowLight(x,y){
+
+    const window=
+      box(
+        .9,
+        .9,
+        .1,
+        0xf0d9a8,
+        {
+          emissive:0xd9a655,
+          emissiveIntensity:1.2
+        }
+      );
+
+    window.position.set(
+      x,
+      y,
+      2.51
+    );
+
+    house.add(window);
+
+
+    const light=
+      new THREE.PointLight(
+        0xf0d9a8,
+        .5,
+        6
+      );
+
+    light.position.set(
+      x,
+      y,
+      3.2
+    );
+
+    house.add(light);
+
+  }
+
+
+  windowLight(-2,2.6);
+  windowLight(2,2.6);
+
+
+  /* DOOR */
+
+  const doorGroup=
+    new THREE.Group();
+
+
+  const door=
+    box(
+      1.3,
+      2.4,
+      .15,
+      0xb5495b,
+      {
+        roughness:.6,
+        emissive:0x6e2130,
+        emissiveIntensity:.25
+      }
+    );
+
+  door.position.set(
+    0,
+    1.2,
+    2.55
+  );
+
   doorGroup.add(door);
-  const knob = new THREE.Mesh(new THREE.SphereGeometry(0.07,12,12), new THREE.MeshStandardMaterial({color:0xd9a655, metalness:0.7, roughness:0.3}));
-  knob.position.set(0.45,1.2,2.65);
+
+
+  const knob=
+    new THREE.Mesh(
+      new THREE.SphereGeometry(
+        .07,
+        12,
+        12
+      ),
+      new THREE.MeshStandardMaterial({
+        color:0xd9a655,
+        metalness:.7,
+        roughness:.3
+      })
+    );
+
+  knob.position.set(
+    .45,
+    1.2,
+    2.65
+  );
+
   doorGroup.add(knob);
 
-  const label = textSprite(CONFIG.doorLabel);
-  label.position.set(0, 2.9, 2.6);
+
+  const label=
+    textSprite(
+      CONFIG.doorLabel
+    );
+
+  label.position.set(
+    0,
+    2.9,
+    2.6
+  );
+
   doorGroup.add(label);
 
   house.add(doorGroup);
-  house.position.z = -2;
+
+  house.position.z=-2;
+
   scene.add(house);
-  animLoopFns.push((t)=>{ house.position.y = Math.sin(t*0.0005)*0.03; });
 
-  document.getElementById('hint').textContent = CONFIG.doorInstruction;
 
-  let opened = false;
-  clickables.push({
-    mesh: door,
-    onClick: ()=>{
-      if(opened) return;
-      opened = true;
-      document.getElementById('hint').style.opacity = '0';
-      const start = performance.now();
-      function swing(t){
-        const p = Math.min(1,(t-start)/700);
-        doorGroup.rotation.y = -p*1.3;
-        doorGroup.position.x = -p*0.5;
-        if(p<1) requestAnimationFrame(swing);
-        else setTimeout(()=>fadeTransition(buildFoyer), 250);
-      }
-      requestAnimationFrame(swing);
+  animationFunctions.push(
+    time=>{
+      house.position.y=
+        Math.sin(time*.0005)*.03;
     }
+  );
+
+
+  document.getElementById("hint")
+    .textContent=
+      CONFIG.doorInstruction;
+
+
+  let opened=false;
+
+
+  clickables.push({
+    mesh:door,
+
+    onClick:()=>{
+
+      if(opened) return;
+
+      opened=true;
+
+      document.getElementById("hint")
+        .style.opacity="0";
+
+
+      const start=
+        performance.now();
+
+
+      function openDoor(time){
+
+        const progress=
+          Math.min(
+            1,
+            (time-start)/800
+          );
+
+        doorGroup.rotation.y=
+          -progress*1.35;
+
+        doorGroup.position.x=
+          -progress*.5;
+
+        if(progress<1){
+
+          requestAnimationFrame(
+            openDoor
+          );
+
+        }else{
+
+          setTimeout(
+            ()=>{
+              fadeTransition(
+                buildFoyer
+              );
+            },
+            250
+          );
+
+        }
+
+      }
+
+      requestAnimationFrame(
+        openDoor
+      );
+
+    }
+
   });
+
 }
 
-/* =========================================================================
-   SCENE 2 — FOYER (360 look-around, box + date quiz + key)
-========================================================================= */
-function buildFoyer(){
-  clearScene();
-  animLoopFns = [];
-  look.enabled = true;
-  document.getElementById('hint').textContent = 'drag to look around · click the box on the table';
-  document.getElementById('hint').style.opacity = '.85';
 
-  scene.background = new THREE.Color(0x241d33);
-  camera.position.set(0,2.2,0);
+/* =========================================================
+   SCENE 2 — FOYER
+========================================================= */
+
+function buildFoyer(){
+
+  clearScene();
+
+  look.enabled=true;
+
+  document.getElementById("hint")
+    .textContent=
+      "swipe to look around · find the box";
+
+  document.getElementById("hint")
+    .style.opacity=".85";
+
+
+  scene.background=
+    new THREE.Color(0x241d33);
+
+
+  camera.position.set(
+    0,
+    2.2,
+    0
+  );
+
   camera.rotation.set(0,0,0);
 
-  scene.add(new THREE.AmbientLight(0xf0d9a8,0.5));
-  const key1 = new THREE.PointLight(0xf0d9a8,0.9,20);
-  key1.position.set(0,4,0);
-  scene.add(key1);
 
-  // simple room shell (walls as an enclosing box, seen from inside)
-  const room = new THREE.Mesh(new THREE.BoxGeometry(14,7,14), new THREE.MeshStandardMaterial({color:0xf3e4c4, roughness:0.95, side:THREE.BackSide}));
-  room.position.y = 2.3;
+  scene.add(
+    new THREE.AmbientLight(
+      0xf0d9a8,
+      .5
+    )
+  );
+
+
+  const room=
+    new THREE.Mesh(
+      new THREE.BoxGeometry(
+        14,
+        7,
+        14
+      ),
+      new THREE.MeshStandardMaterial({
+        color:0xf3e4c4,
+        roughness:.95,
+        side:THREE.BackSide
+      })
+    );
+
+  room.position.y=2.3;
+
   scene.add(room);
-  const floor_ = box(14,0.2,14,0x5a4432,{roughness:0.85});
-  floor_.position.set(0,-1.15,0);
-  scene.add(floor_);
 
-  // table + box
-  const table = box(1.6,1,1,0x3a2a1f,{roughness:0.7});
-  table.position.set(0,-0.6,-3);
+
+  const floor=
+    box(
+      14,
+      .2,
+      14,
+      0x5a4432,
+      {roughness:.85}
+    );
+
+  floor.position.y=-1.15;
+
+  scene.add(floor);
+
+
+  const light=
+    new THREE.PointLight(
+      0xf0d9a8,
+      .9,
+      20
+    );
+
+  light.position.set(
+    0,
+    4,
+    0
+  );
+
+  scene.add(light);
+
+
+  /* TABLE */
+
+  const table=
+    box(
+      1.7,
+      1,
+      1.2,
+      0x3a2a1f
+    );
+
+  table.position.set(
+    0,
+    -.6,
+    -3
+  );
+
   scene.add(table);
-  const giftBase = box(0.7,0.5,0.7,0x6e2130,{roughness:0.4, metalness:0.2});
-  giftBase.position.set(0,-0.05,-3);
-  scene.add(giftBase);
-  const lid = box(0.78,0.18,0.78,0xd9a655,{roughness:0.3, metalness:0.4, emissive:0xd9a655, emissiveIntensity:0.15});
-  lid.position.set(0,0.29,-3);
-  scene.add(lid);
-  const glow = new THREE.PointLight(0xd9a655,0.7,5);
-  glow.position.set(0,0.6,-3);
-  scene.add(glow);
-  animLoopFns.push((t)=>{ lid.position.y = 0.29 + Math.sin(t*0.0018)*0.03; });
 
-  let boxOpened = false;
-  const boxClick = ()=>{
-    if(boxOpened) return;
-    openDateModal(()=>{
-      boxOpened = true;
-      const t0 = performance.now();
-      function pop(t){
-        const p = Math.min(1,(t-t0)/600);
-        lid.position.y = 0.29 + p*0.5;
-        lid.rotation.z = -p*0.6;
-        if(p<1) requestAnimationFrame(pop);
+
+  /* BOX */
+
+  const gift=
+    new THREE.Group();
+
+
+  const base=
+    box(
+      .75,
+      .5,
+      .75,
+      0x6e2130,
+      {
+        roughness:.4,
+        metalness:.2
       }
-      requestAnimationFrame(pop);
-      spawnKeyAndDoor();
-    });
-  };
-  clickables.push({mesh: giftBase, onClick: boxClick});
-  clickables.push({mesh: lid, onClick: boxClick});
+    );
+
+  base.position.y=.05;
+
+  gift.add(base);
+
+
+  const lid=
+    box(
+      .82,
+      .18,
+      .82,
+      0xd9a655,
+      {
+        roughness:.3,
+        metalness:.4,
+        emissive:0xd9a655,
+        emissiveIntensity:.15
+      }
+    );
+
+  lid.position.y=.35;
+
+  gift.add(lid);
+
+
+  gift.position.set(
+    0,
+    0,
+    -3
+  );
+
+  scene.add(gift);
+
+
+  const boxGlow=
+    new THREE.PointLight(
+      0xd9a655,
+      .8,
+      5
+    );
+
+  boxGlow.position.set(
+    0,
+    .7,
+    -3
+  );
+
+  scene.add(boxGlow);
+
+
+  animationFunctions.push(
+    time=>{
+      lid.position.y=
+        .35+
+        Math.sin(time*.0018)*.025;
+    }
+  );
+
+
+  let opened=false;
+
+
+  function openBox(){
+
+    if(opened) return;
+
+    opened=true;
+
+    openDateModal(
+      ()=>{
+
+        const start=
+          performance.now();
+
+        function animateBox(time){
+
+          const progress=
+            Math.min(
+              1,
+              (time-start)/600
+            );
+
+          lid.position.y=
+            .35+
+            progress*.5;
+
+          lid.rotation.z=
+            -progress*.6;
+
+          if(progress<1){
+
+            requestAnimationFrame(
+              animateBox
+            );
+
+          }
+
+        }
+
+        requestAnimationFrame(
+          animateBox
+        );
+
+        spawnKeyAndDoor();
+
+      }
+    );
+
+  }
+
+
+  clickables.push({
+    mesh:base,
+    onClick:openBox
+  });
+
+
+  clickables.push({
+    mesh:lid,
+    onClick:openBox
+  });
+
 
   function spawnKeyAndDoor(){
-    document.getElementById('hint').textContent = 'a key appears — find the glowing door behind you';
-    // key
-    const keyGroup = new THREE.Group();
-    const keyRing = new THREE.Mesh(new THREE.TorusGeometry(0.14,0.03,10,20), new THREE.MeshStandardMaterial({color:0xd9a655, metalness:0.8, roughness:0.2}));
-    keyGroup.add(keyRing);
-    const keyShaft = box(0.3,0.05,0.05,0xd9a655,{metalness:0.8, roughness:0.2});
-    keyShaft.position.x = 0.28;
-    keyGroup.add(keyShaft);
-    keyGroup.position.set(0,0.6,-3);
-    scene.add(keyGroup);
-    animLoopFns.push((t)=>{ keyGroup.rotation.y = t*0.0015; keyGroup.position.y = 0.6+Math.sin(t*0.002)*0.08; });
 
-    // door behind the player, glowing, becomes clickable
-    const passage = box(1.5,2.6,0.2,0xd9a655,{emissive:0xd9a655, emissiveIntensity:0.9, roughness:0.3});
-    passage.position.set(0,1.1,6.8);
-    passage.rotation.y = Math.PI;
-    scene.add(passage);
-    const doorGlow = new THREE.PointLight(0xd9a655,1.1,8);
-    doorGlow.position.set(0,1.4,6.2);
-    scene.add(doorGlow);
-    animLoopFns.push((t)=>{ passage.material.emissiveIntensity = 0.7+Math.sin(t*0.003)*0.3; });
-    clickables.push({
-      mesh: passage,
-      onClick: ()=>{
-        document.getElementById('hint').style.opacity = '0';
-        fadeTransition(buildPhotoRoom);
-      }
-    });
-  }
-}
+    document.getElementById("hint")
+      .textContent=
+        "a key appears · find the glowing door behind you";
 
-/* =========================================================================
-   SCENE 3 — PHOTO ROOM (flowing rotating frames, birthday letter, location Q)
-========================================================================= */
-function buildPhotoRoom(){
-  clearScene();
-  animLoopFns = [];
-  look.enabled = true;
-  document.getElementById('hint').textContent = 'drag to look around';
-  document.getElementById('hint').style.opacity = '.85';
 
-  scene.background = new THREE.Color(0x2a1d3a);
-  camera.position.set(0,1.8,0);
-  camera.rotation.set(0,0,0);
+    /* KEY */
 
-  scene.add(new THREE.AmbientLight(0xe8b4bd,0.5));
-  const glow1 = new THREE.PointLight(0xd9a655,0.9,20);
-  glow1.position.set(0,4,0);
-  scene.add(glow1);
+    const key=
+      new THREE.Group();
 
-  const room = new THREE.Mesh(new THREE.BoxGeometry(16,7,16), new THREE.MeshStandardMaterial({color:0x352646, roughness:0.95, side:THREE.BackSide}));
-  room.position.y = 2.3;
-  scene.add(room);
-  const floor_ = box(16,0.2,16,0x241833,{roughness:0.85});
-  floor_.position.set(0,-1.15,0);
-  scene.add(floor_);
 
-  // flowing frames — a ring of picture frames orbiting the player, showing your photos/videos.
-  // frame count == mediaList.length exactly, so every frame always has content, none left empty.
-  const frameGroup = new THREE.Group();
-  const mediaList = CONFIG.photoRoomMedia;
-  const count = mediaList.length;
-  const textureLoader = new THREE.TextureLoader();
-  const frameW = 1.0, frameH = 1.3; // fixed frame size — media crops to fill it (like object-fit: cover)
-
-  function fitCover(tex, sourceW, sourceH){
-    const srcAspect = sourceW / sourceH;
-    const frameAspect = frameW / frameH;
-    if(srcAspect > frameAspect){
-      tex.repeat.set(frameAspect / srcAspect, 1);
-      tex.offset.set((1 - tex.repeat.x)/2, 0);
-    } else {
-      tex.repeat.set(1, srcAspect / frameAspect);
-      tex.offset.set(0, (1 - tex.repeat.y)/2);
-    }
-    tex.needsUpdate = true;
-  }
-
-  for(let i=0;i<count;i++){
-    const angle = (i/count)*Math.PI*2;
-    const radius = 4.6;
-    const single = new THREE.Group();
-
-    const outer = box(frameW+0.2, frameH+0.2, 0.08, 0x1c1420, {roughness:0.5});
-    single.add(outer);
-
-    const item = mediaList[i];
-    const planeMat = new THREE.MeshBasicMaterial({color:0x2a2a2a});
-    const plane = new THREE.Mesh(new THREE.PlaneGeometry(frameW, frameH), planeMat);
-    plane.position.z = 0.045;
-    single.add(plane);
-
-    if(item.type === 'image'){
-      textureLoader.load(
-        item.src,
-        (tex)=>{
-          tex.colorSpace = THREE.SRGBColorSpace;
-          planeMat.map = tex;
-          planeMat.color.set(0xffffff);
-          planeMat.needsUpdate = true;
-          fitCover(tex, tex.image.width, tex.image.height);
-        },
-        undefined,
-        ()=>{ console.warn('Could not load image:', item.src); }
+    const ring=
+      new THREE.Mesh(
+        new THREE.TorusGeometry(
+          .15,
+          .035,
+          10,
+          20
+        ),
+        new THREE.MeshStandardMaterial({
+          color:0xd9a655,
+          metalness:.8,
+          roughness:.2
+        })
       );
-    } else if(item.type === 'video'){
-      const video = document.createElement('video');
-      video.src = item.src;
-      video.loop = true; video.muted = true; video.playsInline = true; video.autoplay = true;
-      video.crossOrigin = 'anonymous';
-      video.addEventListener('loadedmetadata', ()=>{
-        const vTex = new THREE.VideoTexture(video);
-        vTex.colorSpace = THREE.SRGBColorSpace;
-        planeMat.map = vTex;
-        planeMat.color.set(0xffffff);
-        planeMat.needsUpdate = true;
-        fitCover(vTex, video.videoWidth, video.videoHeight);
-      });
-      video.addEventListener('error', ()=>{
-        console.warn('Could not load video:', item.src, '— convert to .mp4 (H.264) for wide browser support.');
-      });
-      video.play().catch(()=>{});
-    }
 
-    single.position.set(Math.cos(angle)*radius, 1.2+Math.sin(i*1.7)*0.9, Math.sin(angle)*radius);
-    single.lookAt(0, single.position.y, 0);
-    single.userData.angle = angle;
-    single.userData.radius = radius;
-    single.userData.baseY = single.position.y;
-    frameGroup.add(single);
-  }
-  scene.add(frameGroup);
-  animLoopFns.push((t)=>{
-    frameGroup.children.forEach((f,i)=>{
-      const a = f.userData.angle + t*0.00018;
-      f.position.x = Math.cos(a)*f.userData.radius;
-      f.position.z = Math.sin(a)*f.userData.radius;
-      f.position.y = f.userData.baseY + Math.sin(t*0.0006+i)*0.25;
-      f.lookAt(0, f.position.y, 0);
-    });
-  });
+    key.add(ring);
 
-  // show birthday letter after a short beat, then location question — background music
-  // keeps playing continuously through this room, untouched
-  setTimeout(()=>{
-    openBirthdayLetter(()=>{
-      openLocationModal(()=>{
-        spawnNextPassage();
-      });
-    });
-  }, 1600);
 
-  function spawnNextPassage(){
-    document.getElementById('hint').textContent = 'one more door, glowing softly';
-    const passage = box(1.5,2.6,0.2,0xb5495b,{emissive:0xb5495b, emissiveIntensity:0.9, roughness:0.3});
-    passage.position.set(0,1.1,7.3);
-    passage.rotation.y = Math.PI;
-    scene.add(passage);
-    const g = new THREE.PointLight(0xb5495b,1.1,8);
-    g.position.set(0,1.4,6.6);
-    scene.add(g);
-    animLoopFns.push((t)=>{ passage.material.emissiveIntensity = 0.7+Math.sin(t*0.003)*0.3; });
-    clickables.push({
-      mesh: passage,
-      onClick: ()=>{
-        document.getElementById('hint').style.opacity = '0';
-        fadeTransition(buildRoseRoom);
+    const shaft=
+      box(
+        .32,
+        .06,
+        .06,
+        0xd9a655,
+        {
+          metalness:.8,
+          roughness:.2
+        }
+      );
+
+    shaft.position.x=.28;
+
+    key.add(shaft);
+
+
+    key.position.set(
+      0,
+      .7,
+      -3
+    );
+
+    scene.add(key);
+
+
+    animationFunctions.push(
+      time=>{
+
+        key.rotation.y=
+          time*.0015;
+
+        key.position.y=
+          .7+
+          Math.sin(time*.002)*.08;
+
       }
+    );
+
+
+    /* NEXT DOOR */
+
+    const nextDoor=
+      box(
+        1.5,
+        2.6,
+        .2,
+        0xd9a655,
+        {
+          emissive:0xd9a655,
+          emissiveIntensity:.9,
+          roughness:.3
+        }
+      );
+
+    nextDoor.position.set(
+      0,
+      1.1,
+      6.8
+    );
+
+    scene.add(nextDoor);
+
+
+    const doorLight=
+      new THREE.PointLight(
+        0xd9a655,
+        1.2,
+        8
+      );
+
+    doorLight.position.set(
+      0,
+      1.4,
+      6.2
+    );
+
+    scene.add(doorLight);
+
+
+    animationFunctions.push(
+      time=>{
+        nextDoor.material.emissiveIntensity=
+          .75+
+          Math.sin(time*.003)*.25;
+      }
+    );
+
+
+    clickables.push({
+      mesh:nextDoor,
+
+      onClick:()=>{
+
+        document.getElementById("hint")
+          .style.opacity="0";
+
+        fadeTransition(
+          buildPhotoRoom
+        );
+
+      }
+
     });
+
   }
+
 }
 
-/* =========================================================================
-   SCENE 4 — ROSE ROOM (voice message ducks background music, then the ask)
-========================================================================= */
-function buildRoseRoom(){
-  clearScene();
-  animLoopFns = [];
-  look.enabled = true;
-  document.getElementById('hint').textContent = '';
 
-  scene.background = new THREE.Color(0x1c1330);
-  camera.position.set(0,1.8,0);
+/* =========================================================
+   SCENE 3 — PHOTO ROOM
+========================================================= */
+
+function buildPhotoRoom(){
+
+  clearScene();
+
+  look.enabled=true;
+
+  document.getElementById("hint")
+    .textContent=
+      "swipe to look around";
+
+  document.getElementById("hint")
+    .style.opacity=".75";
+
+
+  scene.background=
+    new THREE.Color(0x2a1d3a);
+
+
+  camera.position.set(
+    0,
+    1.8,
+    0
+  );
+
   camera.rotation.set(0,0,0);
 
-  scene.add(new THREE.AmbientLight(0xe8b4bd,0.4));
-  const w1 = new THREE.PointLight(0xd9a655,1,16);
-  w1.position.set(-3,4,2);
-  scene.add(w1);
-  const w2 = new THREE.PointLight(0xb5495b,0.8,16);
-  w2.position.set(3,3,-2);
-  scene.add(w2);
 
-  const room = new THREE.Mesh(new THREE.BoxGeometry(16,7,16), new THREE.MeshStandardMaterial({color:0x2a1d38, roughness:0.95, side:THREE.BackSide}));
-  room.position.y = 2.3;
+  scene.add(
+    new THREE.AmbientLight(
+      0xe8b4bd,
+      .5
+    )
+  );
+
+
+  const room=
+    new THREE.Mesh(
+      new THREE.BoxGeometry(
+        16,
+        7,
+        16
+      ),
+      new THREE.MeshStandardMaterial({
+        color:0x352646,
+        roughness:.95,
+        side:THREE.BackSide
+      })
+    );
+
+  room.position.y=2.3;
+
   scene.add(room);
-  const floor_ = box(16,0.2,16,0x3a2a4a,{roughness:0.85});
-  floor_.position.set(0,-1.15,0);
-  scene.add(floor_);
 
-  // roses falling from above — shiny tiny red particles raining continuously
-  const petalCount = 260;
-  const roomRadius = 7, topY = 6, floorY = -1.1;
-  const petalGeo = new THREE.BufferGeometry();
-  const petalPositions = new Float32Array(petalCount*3);
-  const petalSpeeds = new Float32Array(petalCount);
-  for(let i=0;i<petalCount;i++){
-    const r = Math.random()*roomRadius;
-    const a = Math.random()*Math.PI*2;
-    petalPositions[i*3] = Math.cos(a)*r;
-    petalPositions[i*3+1] = floorY + Math.random()*(topY-floorY);
-    petalPositions[i*3+2] = Math.sin(a)*r;
-    petalSpeeds[i] = 0.004 + Math.random()*0.01;
+
+  const floor=
+    box(
+      16,
+      .2,
+      16,
+      0x241833,
+      {roughness:.85}
+    );
+
+  floor.position.y=-1.15;
+
+  scene.add(floor);
+
+
+  const roomLight=
+    new THREE.PointLight(
+      0xd9a655,
+      .95,
+      20
+    );
+
+  roomLight.position.set(
+    0,
+    4,
+    0
+  );
+
+  scene.add(roomLight);
+
+
+  /* =====================================================
+     MEDIA FRAMES
+
+     IMPORTANT:
+     A frame is only added after the media successfully
+     loads. This means there can NEVER be an empty frame.
+  ===================================================== */
+
+  const mediaList=
+    CONFIG.photoRoomMedia;
+
+  const frameGroup=
+    new THREE.Group();
+
+  scene.add(frameGroup);
+
+
+  const frameWidth=1.05;
+  const frameHeight=1.35;
+
+  const loadedFrames=[];
+
+
+  function fitCover(
+    texture,
+    sourceWidth,
+    sourceHeight
+  ){
+
+    const sourceAspect=
+      sourceWidth/sourceHeight;
+
+    const frameAspect=
+      frameWidth/frameHeight;
+
+
+    if(sourceAspect>frameAspect){
+
+      texture.repeat.set(
+        frameAspect/sourceAspect,
+        1
+      );
+
+      texture.offset.set(
+        (1-texture.repeat.x)/2,
+        0
+      );
+
+    }else{
+
+      texture.repeat.set(
+        1,
+        sourceAspect/frameAspect
+      );
+
+      texture.offset.set(
+        0,
+        (1-texture.repeat.y)/2
+      );
+
+    }
+
+    texture.needsUpdate=true;
+
   }
-  petalGeo.setAttribute('position', new THREE.BufferAttribute(petalPositions,3));
-  const petalMat = new THREE.PointsMaterial({
-    color: 0xff3b5c,
-    size: 0.11,
-    transparent: true,
-    opacity: 0.95,
-    blending: THREE.AdditiveBlending,
-    depthWrite: false,
-    sizeAttenuation: true
-  });
-  const petals = new THREE.Points(petalGeo, petalMat);
+
+
+  function createFrame(texture){
+
+    const frame=
+      new THREE.Group();
+
+
+    const outer=
+      box(
+        frameWidth+.18,
+        frameHeight+.18,
+        .09,
+        0x17111e,
+        {
+          roughness:.45,
+          metalness:.1
+        }
+      );
+
+    frame.add(outer);
+
+
+    const material=
+      new THREE.MeshBasicMaterial({
+        map:texture,
+        color:0xffffff
+      });
+
+
+    const imagePlane=
+      new THREE.Mesh(
+        new THREE.PlaneGeometry(
+          frameWidth,
+          frameHeight
+        ),
+        material
+      );
+
+    imagePlane.position.z=.055;
+
+    frame.add(imagePlane);
+
+
+    return frame;
+
+  }
+
+
+  function addLoadedFrame(frame){
+
+    const index=
+      loadedFrames.length;
+
+    const count=
+      mediaList.length;
+
+    const angle=
+      (index/count)*Math.PI*2;
+
+    const radius=4.6;
+
+    frame.position.set(
+      Math.cos(angle)*radius,
+      1.4+
+        Math.sin(index*1.7)*.8,
+      Math.sin(angle)*radius
+    );
+
+    frame.userData.angle=angle;
+    frame.userData.radius=radius;
+    frame.userData.baseY=frame.position.y;
+
+    frame.lookAt(
+      0,
+      frame.position.y,
+      0
+    );
+
+    frameGroup.add(frame);
+
+    loadedFrames.push(frame);
+
+  }
+
+
+  function loadImage(item){
+
+    return new Promise(
+      resolve=>{
+
+        const loader=
+          new THREE.TextureLoader();
+
+        loader.load(
+
+          item.src,
+
+          texture=>{
+
+            texture.colorSpace=
+              THREE.SRGBColorSpace;
+
+            fitCover(
+              texture,
+              texture.image.width,
+              texture.image.height
+            );
+
+            resolve(
+              createFrame(texture)
+            );
+
+          },
+
+          undefined,
+
+          ()=>{
+            console.warn(
+              "Could not load:",
+              item.src
+            );
+
+            resolve(null);
+          }
+
+        );
+
+      }
+    );
+
+  }
+
+
+  function loadVideo(item){
+
+    return new Promise(
+      resolve=>{
+
+        const video=
+          document.createElement("video");
+
+        video.src=item.src;
+
+        video.loop=true;
+        video.muted=true;
+        video.playsInline=true;
+        video.autoplay=true;
+        video.preload="auto";
+
+        video.addEventListener(
+          "loadedmetadata",
+          ()=>{
+
+            const texture=
+              new THREE.VideoTexture(
+                video
+              );
+
+            texture.colorSpace=
+              THREE.SRGBColorSpace;
+
+            fitCover(
+              texture,
+              video.videoWidth,
+              video.videoHeight
+            );
+
+            video.play().catch(
+              ()=>{}
+            );
+
+            const frame=
+              createFrame(texture);
+
+            frame.userData.video=video;
+
+            resolve(frame);
+
+          },
+          {once:true}
+        );
+
+
+        video.addEventListener(
+          "error",
+          ()=>{
+            console.warn(
+              "Could not load:",
+              item.src
+            );
+
+            resolve(null);
+          },
+          {once:true}
+        );
+
+      }
+    );
+
+  }
+
+
+  /* Load sequentially.
+     Successful media creates exactly one frame.
+     Failed media creates ZERO frames. */
+
+  (async function(){
+
+    for(
+      const item of mediaList
+    ){
+
+      let frame=null;
+
+      if(item.type==="image"){
+
+        frame=
+          await loadImage(item);
+
+      }else{
+
+        frame=
+          await loadVideo(item);
+
+      }
+
+      if(frame){
+
+        addLoadedFrame(frame);
+
+      }
+
+    }
+
+  })();
+
+
+  animationFunctions.push(
+    time=>{
+
+      frameGroup.children.forEach(
+        (frame,index)=>{
+
+          const angle=
+            frame.userData.angle+
+            time*.00018;
+
+          frame.position.x=
+            Math.cos(angle)*
+            frame.userData.radius;
+
+          frame.position.z=
+            Math.sin(angle)*
+            frame.userData.radius;
+
+          frame.position.y=
+            frame.userData.baseY+
+            Math.sin(
+              time*.0006+index
+            )*.22;
+
+          frame.lookAt(
+            0,
+            frame.position.y,
+            0
+          );
+
+        }
+      );
+
+    }
+  );
+
+
+  /* Birthday message appears after the room settles */
+
+  setTimeout(
+    ()=>{
+
+      openBirthdayLetter(
+        ()=>{
+
+          openLocationModal(
+            ()=>{
+              spawnNextDoor();
+            }
+          );
+
+        }
+      );
+
+    },
+    1800
+  );
+
+
+  function spawnNextDoor(){
+
+    document.getElementById("hint")
+      .textContent=
+        "one more door";
+
+
+    const nextDoor=
+      box(
+        1.5,
+        2.6,
+        .2,
+        0xb5495b,
+        {
+          emissive:0xb5495b,
+          emissiveIntensity:.9,
+          roughness:.3
+        }
+      );
+
+    nextDoor.position.set(
+      0,
+      1.1,
+      7.3
+    );
+
+    scene.add(nextDoor);
+
+
+    const glow=
+      new THREE.PointLight(
+        0xb5495b,
+        1.2,
+        8
+      );
+
+    glow.position.set(
+      0,
+      1.4,
+      6.6
+    );
+
+    scene.add(glow);
+
+
+    animationFunctions.push(
+      time=>{
+        nextDoor.material.emissiveIntensity=
+          .75+
+          Math.sin(time*.003)*.25;
+      }
+    );
+
+
+    clickables.push({
+
+      mesh:nextDoor,
+
+      onClick:()=>{
+
+        document.getElementById("hint")
+          .style.opacity="0";
+
+        fadeTransition(
+          buildRoseRoom
+        );
+
+      }
+
+    });
+
+  }
+
+}
+
+
+/* =========================================================
+   SCENE 4 — ROSE ROOM
+========================================================= */
+
+function buildRoseRoom(){
+
+  clearScene();
+
+  look.enabled=true;
+
+  document.getElementById("hint")
+    .textContent="";
+
+  scene.background=
+    new THREE.Color(0x160d22);
+
+
+  camera.position.set(
+    0,
+    1.8,
+    0
+  );
+
+  camera.rotation.set(0,0,0);
+
+
+  scene.add(
+    new THREE.AmbientLight(
+      0xe8b4bd,
+      .35
+    )
+  );
+
+
+  const warmLight=
+    new THREE.PointLight(
+      0xd9a655,
+      1.1,
+      18
+    );
+
+  warmLight.position.set(
+    -3,
+    4,
+    2
+  );
+
+  scene.add(warmLight);
+
+
+  const roseLight=
+    new THREE.PointLight(
+      0xb5495b,
+      .9,
+      18
+    );
+
+  roseLight.position.set(
+    3,
+    3,
+    -2
+  );
+
+  scene.add(roseLight);
+
+
+  const room=
+    new THREE.Mesh(
+      new THREE.BoxGeometry(
+        16,
+        7,
+        16
+      ),
+      new THREE.MeshStandardMaterial({
+        color:0x26172f,
+        roughness:.95,
+        side:THREE.BackSide
+      })
+    );
+
+  room.position.y=2.3;
+
+  scene.add(room);
+
+
+  const floor=
+    box(
+      16,
+      .2,
+      16,
+      0x35243f,
+      {roughness:.85}
+    );
+
+  floor.position.y=-1.15;
+
+  scene.add(floor);
+
+
+  /* =====================================================
+     FALLING ROSE PARTICLES
+  ===================================================== */
+
+  const count=300;
+
+  const positions=
+    new Float32Array(
+      count*3
+    );
+
+  const speeds=
+    new Float32Array(count);
+
+  const drift=
+    new Float32Array(count);
+
+  const roomRadius=7;
+
+  const topY=6;
+
+  const floorY=-1.1;
+
+
+  for(
+    let i=0;
+    i<count;
+    i++
+  ){
+
+    const radius=
+      Math.random()*roomRadius;
+
+    const angle=
+      Math.random()*Math.PI*2;
+
+    positions[i*3]=
+      Math.cos(angle)*radius;
+
+    positions[i*3+1]=
+      floorY+
+      Math.random()*
+      (topY-floorY);
+
+    positions[i*3+2]=
+      Math.sin(angle)*radius;
+
+    speeds[i]=
+      .003+
+      Math.random()*.008;
+
+    drift[i]=
+      Math.random()*.6+.2;
+
+  }
+
+
+  const geometry=
+    new THREE.BufferGeometry();
+
+  geometry.setAttribute(
+    "position",
+    new THREE.BufferAttribute(
+      positions,
+      3
+    )
+  );
+
+
+  const material=
+    new THREE.PointsMaterial({
+
+      color:0xff3b5c,
+
+      size:.105,
+
+      transparent:true,
+
+      opacity:.9,
+
+      blending:
+        THREE.AdditiveBlending,
+
+      depthWrite:false,
+
+      sizeAttenuation:true
+
+    });
+
+
+  const petals=
+    new THREE.Points(
+      geometry,
+      material
+    );
+
   scene.add(petals);
 
-  animLoopFns.push((t)=>{
-    const pos = petalGeo.attributes.position.array;
-    for(let i=0;i<petalCount;i++){
-      pos[i*3+1] -= petalSpeeds[i];
-      pos[i*3] += Math.sin(t*0.001+i)*0.0015; // gentle flutter
-      if(pos[i*3+1] < floorY){
-        pos[i*3+1] = topY;
-        const r = Math.random()*roomRadius;
-        const a = Math.random()*Math.PI*2;
-        pos[i*3] = Math.cos(a)*r;
-        pos[i*3+2] = Math.sin(a)*r;
-      }
-    }
-    petalGeo.attributes.position.needsUpdate = true;
-  });
 
-  setTimeout(()=>{ openVoiceModal(()=>{ openFinalLetter(); }); }, 1400);
+  animationFunctions.push(
+    time=>{
+
+      const array=
+        geometry.attributes
+          .position.array;
+
+
+      for(
+        let i=0;
+        i<count;
+        i++
+      ){
+
+        array[i*3+1]
+          -=speeds[i];
+
+
+        array[i*3]
+          +=
+          Math.sin(
+            time*.001+
+            i
+          )*
+          .0015*
+          drift[i];
+
+
+        array[i*3+2]
+          +=
+          Math.cos(
+            time*.0008+
+            i
+          )*
+          .001;
+
+
+        if(
+          array[i*3+1]<
+          floorY
+        ){
+
+          array[i*3+1]=topY;
+
+          const radius=
+            Math.random()*
+            roomRadius;
+
+          const angle=
+            Math.random()*
+            Math.PI*2;
+
+          array[i*3]=
+            Math.cos(angle)*
+            radius;
+
+          array[i*3+2]=
+            Math.sin(angle)*
+            radius;
+
+        }
+
+      }
+
+
+      geometry.attributes
+        .position
+        .needsUpdate=true;
+
+    }
+  );
+
+
+  /* Voice message */
+
+  setTimeout(
+    ()=>{
+      openVoiceModal(
+        ()=>{
+          openFinalLetter();
+        }
+      );
+    },
+    1600
+  );
+
 }
 
-/* =========================================================================
-   MODALS
-========================================================================= */
-function normalize(s){ return s.toLowerCase().trim().replace(/\s+/g,' '); }
+
+/* =========================================================
+   DATE MODAL
+========================================================= */
 
 function openDateModal(onSuccess){
-  const modal = document.getElementById('date-modal');
-  const monthSel = document.getElementById('date-month');
-  const daySel = document.getElementById('date-day');
-  const yearSel = document.getElementById('date-year');
-  const err = document.getElementById('date-error');
-  document.getElementById('date-question').textContent = CONFIG.dateQuiz.question;
 
-  monthSel.innerHTML = '<option value="">Month</option>' + ['January','February','March','April','May','June','July','August','September','October','November','December'].map((m,i)=>`<option value="${i+1}">${m}</option>`).join('');
-  daySel.innerHTML = '<option value="">Day</option>' + Array.from({length:31},(_,i)=>`<option value="${i+1}">${i+1}</option>`).join('');
-  const thisYear = new Date().getFullYear();
-  let yearOpts = '<option value="">Year</option>';
-  for(let y=thisYear+1; y>=thisYear-3; y--) yearOpts += `<option value="${y}">${y}</option>`;
-  yearSel.innerHTML = yearOpts;
+  const modal=
+    document.getElementById(
+      "date-modal"
+    );
 
-  err.textContent = '';
-  modal.classList.add('show');
+  const month=
+    document.getElementById(
+      "date-month"
+    );
 
-  function submit(){
-    const m = parseInt(monthSel.value), d = parseInt(daySel.value), y = parseInt(yearSel.value);
-    if(m===CONFIG.dateQuiz.month && d===CONFIG.dateQuiz.day && y===CONFIG.dateQuiz.year){
-      modal.classList.remove('show');
-      submitBtn.removeEventListener('click', submit);
+  const day=
+    document.getElementById(
+      "date-day"
+    );
+
+  const year=
+    document.getElementById(
+      "date-year"
+    );
+
+  const error=
+    document.getElementById(
+      "date-error"
+    );
+
+
+  const months=[
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December"
+  ];
+
+
+  month.innerHTML=
+    `<option value="">Month</option>`+
+    months.map(
+      (name,index)=>
+        `<option value="${index+1}">
+          ${name}
+        </option>`
+    ).join("");
+
+
+  day.innerHTML=
+    `<option value="">Day</option>`+
+    Array.from(
+      {length:31},
+      (_,index)=>
+        `<option value="${index+1}">
+          ${index+1}
+        </option>`
+    ).join("");
+
+
+  /* Explicitly include 2026 */
+
+  year.innerHTML=
+    `
+    <option value="">Year</option>
+    <option value="2025">2025</option>
+    <option value="2026">2026</option>
+    <option value="2027">2027</option>
+    `;
+
+
+  error.textContent="";
+
+  modal.classList.add("show");
+
+
+  const submit=
+    document.getElementById(
+      "date-submit"
+    );
+
+
+  function handleSubmit(){
+
+    const selectedMonth=
+      Number(month.value);
+
+    const selectedDay=
+      Number(day.value);
+
+    const selectedYear=
+      Number(year.value);
+
+
+    if(
+      selectedMonth===
+      CONFIG.dateQuiz.month &&
+
+      selectedDay===
+      CONFIG.dateQuiz.day &&
+
+      selectedYear===
+      CONFIG.dateQuiz.year
+    ){
+
+      modal.classList.remove("show");
+
+      submit.removeEventListener(
+        "click",
+        handleSubmit
+      );
+
       onSuccess();
-    } else {
-      err.textContent = "not quite — think again";
+
+    }else{
+
+      error.textContent=
+        "not quite... think again ❤️";
+
     }
+
   }
-  const submitBtn = document.getElementById('date-submit');
-  submitBtn.addEventListener('click', submit);
+
+
+  submit.addEventListener(
+    "click",
+    handleSubmit
+  );
+
 }
 
-function openLocationModal(onSuccess){
-  const modal = document.getElementById('location-modal');
-  const field = document.getElementById('location-field');
-  const err = document.getElementById('location-error');
-  modal.querySelector('p').textContent = CONFIG.locationQuestion.question;
-  field.value = ''; err.textContent = '';
-  modal.classList.add('show');
-  setTimeout(()=>field.focus(), 300);
 
-  function submit(){
-    if(normalize(field.value) === normalize(CONFIG.locationQuestion.answer)){
-      modal.classList.remove('show');
-      submitBtn.removeEventListener('click', submit);
-      field.removeEventListener('keydown', onKey);
-      onSuccess();
-    } else {
-      err.textContent = "that's not it — try again";
-    }
-  }
-  function onKey(e){ if(e.key==='Enter') submit(); }
-  const submitBtn = document.getElementById('location-submit');
-  submitBtn.addEventListener('click', submit);
-  field.addEventListener('keydown', onKey);
-}
+/* =========================================================
+   BIRTHDAY LETTER
+========================================================= */
 
 function openBirthdayLetter(onDone){
-  const modal = document.getElementById('birthday-modal');
-  const paper = document.getElementById('birthday-paper');
-  paper.innerHTML = '';
-  CONFIG.birthdayLetter.forEach((line,i)=>{
-    const p = document.createElement('p');
-    p.textContent = line;
-    if(i===0){ p.className='lead'; }
-    paper.appendChild(p);
-  });
-  modal.classList.add('show');
-  const btn = document.getElementById('birthday-continue');
-  function onClick(){
-    modal.classList.remove('show');
-    btn.removeEventListener('click', onClick);
+
+  const modal=
+    document.getElementById(
+      "birthday-modal"
+    );
+
+  const paper=
+    document.getElementById(
+      "birthday-paper"
+    );
+
+
+  paper.innerHTML="";
+
+
+  CONFIG.birthdayLetter.forEach(
+    (line,index)=>{
+
+      const paragraph=
+        document.createElement("p");
+
+      paragraph.textContent=line;
+
+      if(index===0){
+
+        paragraph.className="lead";
+
+      }
+
+      if(
+        index===
+        CONFIG.birthdayLetter.length-1
+      ){
+
+        paragraph.className=
+          "close-line";
+
+      }
+
+      paper.appendChild(
+        paragraph
+      );
+
+    }
+  );
+
+
+  modal.classList.add("show");
+
+
+  const continueButton=
+    document.getElementById(
+      "birthday-continue"
+    );
+
+
+  function close(){
+
+    modal.classList.remove(
+      "show"
+    );
+
+    continueButton.removeEventListener(
+      "click",
+      close
+    );
+
     onDone();
+
   }
-  btn.addEventListener('click', onClick);
+
+
+  continueButton.addEventListener(
+    "click",
+    close
+  );
+
 }
+
+
+/* =========================================================
+   LOCATION
+========================================================= */
+
+function normalize(value){
+
+  return value
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g," ");
+
+}
+
+
+function openLocationModal(onSuccess){
+
+  const modal=
+    document.getElementById(
+      "location-modal"
+    );
+
+  const field=
+    document.getElementById(
+      "location-field"
+    );
+
+  const error=
+    document.getElementById(
+      "location-error"
+    );
+
+
+  document.getElementById(
+    "location-question"
+  ).textContent=
+    CONFIG.locationQuestion.question;
+
+
+  field.value="";
+
+  error.textContent="";
+
+  modal.classList.add("show");
+
+
+  setTimeout(
+    ()=>{
+      field.focus();
+    },
+    350
+  );
+
+
+  const submit=
+    document.getElementById(
+      "location-submit"
+    );
+
+
+  function check(){
+
+    if(
+      normalize(field.value)===
+      normalize(
+        CONFIG.locationQuestion.answer
+      )
+    ){
+
+      modal.classList.remove(
+        "show"
+      );
+
+      submit.removeEventListener(
+        "click",
+        check
+      );
+
+      field.removeEventListener(
+        "keydown",
+        enter
+      );
+
+      onSuccess();
+
+    }else{
+
+      error.textContent=
+        "that's not it... try again ❤️";
+
+    }
+
+  }
+
+
+  function enter(event){
+
+    if(event.key==="Enter"){
+      check();
+    }
+
+  }
+
+
+  submit.addEventListener(
+    "click",
+    check
+  );
+
+  field.addEventListener(
+    "keydown",
+    enter
+  );
+
+}
+
+
+/* =========================================================
+   VOICE MESSAGE
+========================================================= */
 
 function openVoiceModal(onDone){
-  const modal = document.getElementById('voice-modal');
-  const playBtn = document.getElementById('play-voice');
-  const status = document.getElementById('voice-status');
-  const continueBtn = document.getElementById('voice-continue');
-  continueBtn.style.display = 'none';
-  status.textContent = 'tap to listen';
-  playBtn.textContent = '▶';
-  modal.classList.add('show');
 
-  let fallbackTimer = null;
-  let resumedAlready = false;
+  const modal=
+    document.getElementById(
+      "voice-modal"
+    );
 
-  function resumeBgOnce(){
-    if(resumedAlready) return;
-    resumedAlready = true;
+  const playButton=
+    document.getElementById(
+      "play-voice"
+    );
+
+  const status=
+    document.getElementById(
+      "voice-status"
+    );
+
+  const continueButton=
+    document.getElementById(
+      "voice-continue"
+    );
+
+
+  modal.classList.add("show");
+
+  continueButton.style.display="none";
+
+  status.textContent=
+    "tap to listen";
+
+  playButton.textContent="▶";
+
+
+  let finished=false;
+
+
+  function resume(){
+
+    if(finished) return;
+
+    finished=true;
+
     resumeBackgroundMusic();
+
   }
 
-  function play(){
+
+  function playVoice(){
+
     duckBackgroundMusic();
-    resumedAlready = false;
-    voice.currentTime = 0;
-    voice.play().then(()=>{
-      status.textContent = 'playing…';
-      playBtn.textContent = '❚❚';
-    }).catch(()=>{
-      status.textContent = "couldn't play — add the voice message file";
-      continueBtn.style.display = 'inline-block';
-      resumeBgOnce();
-    });
-  }
-  playBtn.onclick = ()=>{
-    if(voice.paused){
-      play();
-    } else {
-      voice.pause();
-      playBtn.textContent='▶';
-      status.textContent='paused';
-      resumeBackgroundMusic();
-      resumedAlready = true;
-    }
-  };
-  voice.onended = ()=>{
-    status.textContent = 'thank you for listening';
-    playBtn.textContent = '▶';
-    continueBtn.style.display = 'inline-block';
-    resumeBgOnce();
-  };
-  // fallback in case the audio file isn't present yet
-  fallbackTimer = setTimeout(()=>{
-    continueBtn.style.display = 'inline-block';
-  }, 4000);
 
-  continueBtn.onclick = ()=>{
-    clearTimeout(fallbackTimer);
-    voice.pause();
-    resumeBgOnce();
-    modal.classList.remove('show');
-    onDone();
+    voice.currentTime=0;
+
+    voice.play()
+      .then(()=>{
+
+        status.textContent=
+          "playing…";
+
+        playButton.textContent="❚❚";
+
+      })
+      .catch(()=>{
+
+        status.textContent=
+          "the voice message couldn't be played";
+
+        continueButton.style.display=
+          "inline-block";
+
+        resume();
+
+      });
+
+  }
+
+
+  playButton.onclick=()=>{
+
+    if(voice.paused){
+
+      playVoice();
+
+    }else{
+
+      voice.pause();
+
+      playButton.textContent="▶";
+
+      status.textContent="paused";
+
+      resume();
+
+    }
+
   };
+
+
+  voice.onended=()=>{
+
+    status.textContent=
+      "thank you for listening ❤️";
+
+    playButton.textContent="▶";
+
+    continueButton.style.display=
+      "inline-block";
+
+    resume();
+
+  };
+
+
+  continueButton.onclick=()=>{
+
+    voice.pause();
+
+    resume();
+
+    modal.classList.remove(
+      "show"
+    );
+
+    onDone();
+
+  };
+
 }
+
+
+/* =========================================================
+   FINAL LETTER
+========================================================= */
 
 function openFinalLetter(){
-  const modal = document.getElementById('letter-modal');
-  const textEl = document.getElementById('letter-text');
-  const askRow = document.getElementById('ask-row');
-  textEl.innerHTML = '';
-  askRow.style.display = 'none';
-  modal.classList.add('show');
 
-  const lines = CONFIG.finalMessage;
-  let i = 0;
-  function nextLine(){
-    if(i >= lines.length){
-      askRow.style.display = 'flex';
+  const modal=
+    document.getElementById(
+      "letter-modal"
+    );
+
+  const text=
+    document.getElementById(
+      "letter-text"
+    );
+
+  const ask=
+    document.getElementById(
+      "ask-row"
+    );
+
+
+  text.innerHTML="";
+
+  ask.style.display="none";
+
+  modal.classList.add("show");
+
+
+  let index=0;
+
+
+  function next(){
+
+    if(
+      index>=
+      CONFIG.finalMessage.length
+    ){
+
+      ask.style.display="flex";
+
       setupAskButtons();
+
       return;
+
     }
-    const p = document.createElement('p');
-    p.style.opacity = '0';
-    p.style.transition = 'opacity 1s ease';
-    p.textContent = lines[i];
-    if(i===0){ p.className = 'lead'; }
-    if(i===lines.length-1){ p.className = 'close-line'; p.style.fontSize='22px'; }
-    textEl.appendChild(p);
-    requestAnimationFrame(()=>{ p.style.opacity = '1'; });
-    i++;
-    setTimeout(nextLine, i===1?900:1100);
+
+
+    const paragraph=
+      document.createElement("p");
+
+    paragraph.textContent=
+      CONFIG.finalMessage[index];
+
+
+    if(index===0){
+
+      paragraph.className="lead";
+
+    }
+
+
+    if(
+      index===
+      CONFIG.finalMessage.length-1
+    ){
+
+      paragraph.className=
+        "close-line";
+
+      paragraph.style.fontSize=
+        "23px";
+
+      paragraph.style.fontWeight=
+        "600";
+
+    }
+
+
+    text.appendChild(
+      paragraph
+    );
+
+
+    requestAnimationFrame(
+      ()=>{
+        paragraph.classList.add(
+          "visible"
+        );
+      }
+    );
+
+
+    index++;
+
+    setTimeout(
+      next,
+      index===1 ? 1200 : 1350
+    );
+
   }
-  setTimeout(nextLine, 500);
+
+
+  setTimeout(
+    next,
+    600
+  );
+
 }
+
+
+/* =========================================================
+   FINAL ANSWER
+========================================================= */
 
 function setupAskButtons(){
-  const yesBtn = document.getElementById('yes-btn');
-  const noBtn = document.getElementById('no-btn');
 
-  yesBtn.onclick = ()=>{
-    document.getElementById('letter-modal').classList.remove('show');
-    document.getElementById('yes-thankyou').textContent = CONFIG.yesThankYou;
-    document.getElementById('yes-celebrate').classList.add('show');
-    stopBackgroundMusic(1500);
+  const yes=
+    document.getElementById(
+      "yes-btn"
+    );
+
+  const no=
+    document.getElementById(
+      "no-btn"
+    );
+
+
+  yes.onclick=()=>{
+
+    document.getElementById(
+      "letter-modal"
+    ).classList.remove(
+      "show"
+    );
+
+
+    document.getElementById(
+      "yes-thankyou"
+    ).textContent=
+      CONFIG.yesThankYou;
+
+
+    document.getElementById(
+      "yes-celebrate"
+    ).classList.add(
+      "show"
+    );
+
+
+    stopBackgroundMusic();
+
     launchConfetti();
+
   };
-  noBtn.onclick = ()=>{
-    document.getElementById('letter-modal').classList.remove('show');
-    stopBackgroundMusic(1800);
-    document.getElementById('black-out').classList.add('show');
+
+
+  no.onclick=()=>{
+
+    document.getElementById(
+      "letter-modal"
+    ).classList.remove(
+      "show"
+    );
+
+
+    stopBackgroundMusic();
+
+
+    setTimeout(
+      ()=>{
+        document.getElementById(
+          "black-out"
+        ).classList.add(
+          "show"
+        );
+      },
+      500
+    );
+
   };
+
 }
+
+
+/* =========================================================
+   CELEBRATION
+========================================================= */
 
 function launchConfetti(){
-  const colors = ['#d9a655','#b5495b','#e8b4bd','#f7ecd9'];
-  for(let i=0;i<60;i++){
-    const el = document.createElement('div');
-    el.style.position='fixed'; el.style.top='-20px';
-    el.style.left = Math.random()*100+'vw';
-    el.style.width = (6+Math.random()*6)+'px'; el.style.height = el.style.width;
-    el.style.background = colors[Math.floor(Math.random()*colors.length)];
-    el.style.borderRadius = Math.random()>0.5 ? '50%':'2px';
-    el.style.zIndex = 80; el.style.opacity = '0.9';
-    el.style.transition = `transform ${3+Math.random()*2}s linear, opacity 1s ease`;
-    document.body.appendChild(el);
-    requestAnimationFrame(()=>{ el.style.transform = `translateY(${innerHeight+40}px) rotate(${360+Math.random()*360}deg)`; });
-    setTimeout(()=>{ el.style.opacity='0'; }, 3500);
-    setTimeout(()=>el.remove(), 5200);
+
+  const symbols=[
+    "❤️",
+    "🌹",
+    "✨",
+    "💕",
+    "❤️‍🔥"
+  ];
+
+
+  for(
+    let i=0;
+    i<85;
+    i++
+  ){
+
+    const element=
+      document.createElement(
+        "div"
+      );
+
+
+    element.textContent=
+      symbols[
+        Math.floor(
+          Math.random()*
+          symbols.length
+        )
+      ];
+
+
+    element.style.position=
+      "fixed";
+
+    element.style.top=
+      "-40px";
+
+    element.style.left=
+      Math.random()*100+
+      "vw";
+
+    element.style.fontSize=
+      (12+
+        Math.random()*18)+
+      "px";
+
+    element.style.zIndex="280";
+
+    element.style.pointerEvents=
+      "none";
+
+    element.style.opacity=".9";
+
+    element.style.transition=
+      `transform ${
+        3+
+        Math.random()*2
+      }s linear,
+      opacity 1s ease`;
+
+
+    document.body.appendChild(
+      element
+    );
+
+
+    requestAnimationFrame(
+      ()=>{
+
+        element.style.transform=
+          `translateY(${
+            window.innerHeight+
+            80
+          }px)
+          rotate(${
+            Math.random()*720
+          }deg)`;
+
+      }
+    );
+
+
+    setTimeout(
+      ()=>{
+        element.style.opacity="0";
+      },
+      3500
+    );
+
+
+    setTimeout(
+      ()=>{
+        element.remove();
+      },
+      5500
+    );
+
   }
+
 }
+
 </script>
+
 </body>
 </html>
