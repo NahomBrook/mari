@@ -3323,209 +3323,261 @@
       }
 
 
-      function loadVideo(
-        item,
-        frameData,
-        index
-      ) {
 
-        const video =
-          document.createElement(
-            "video"
+function loadVideo(item,frameData,index){
+
+  const video=document.createElement("video");
+
+  /*
+     IMPORTANT:
+     Configure the video BEFORE assigning the source.
+     This improves autoplay compatibility across Chrome,
+     Safari and mobile browsers.
+  */
+  video.muted=true;
+  video.defaultMuted=true;
+  video.volume=0;
+
+  video.loop=true;
+  video.autoplay=true;
+  video.playsInline=true;
+  video.controls=false;
+
+  video.preload="auto";
+
+  video.setAttribute("muted","");
+  video.setAttribute("autoplay","");
+  video.setAttribute("playsinline","");
+  video.setAttribute("webkit-playsinline","");
+
+  /*
+     Resolve the path against the actual deployed page URL.
+  */
+  const videoUrl=
+    new URL(item.src,document.baseURI).href;
+
+  video.src=videoUrl;
+
+  /*
+     Keep the video reference attached to the frame.
+  */
+  frameData.frame.userData.video=video;
+
+
+  /*
+     CREATE THE VIDEOTEXTURE IMMEDIATELY.
+     
+     Previously this was only created after loadedmetadata.
+     That could leave an empty frame while the browser was
+     loading the video.
+  */
+  const texture=new THREE.VideoTexture(video);
+
+  texture.encoding=THREE.sRGBEncoding;
+
+  texture.minFilter=THREE.LinearFilter;
+  texture.magFilter=THREE.LinearFilter;
+
+  texture.generateMipmaps=false;
+
+  /*
+     Attach the texture immediately.
+  */
+  frameData.material.map=texture;
+  frameData.material.color.set(0xffffff);
+  frameData.material.needsUpdate=true;
+
+
+  /*
+     Correct the crop once the video's dimensions are known.
+  */
+  function updateVideoTexture(){
+
+    if(video.videoWidth && video.videoHeight){
+
+      fitCover(
+        texture,
+        video.videoWidth,
+        video.videoHeight
+      );
+
+      texture.needsUpdate=true;
+    }
+  }
+
+
+  /*
+     Try playback whenever the browser tells us
+     that enough of the video is available.
+  */
+  function tryPlay(){
+
+    updateVideoTexture();
+
+    const promise=video.play();
+
+    if(promise !== undefined){
+
+      promise
+        .then(()=>{
+          console.log(
+            "Video playing:",
+            item.src
           );
-
-
-        video.muted = true;
-        video.defaultMuted = true;
-        video.loop = true;
-        video.autoplay = true;
-        video.playsInline = true;
-        video.preload = "auto";
-        video.controls = false;
-
-
-        video.setAttribute(
-          "muted",
-          ""
-        );
-
-
-        video.setAttribute(
-          "playsinline",
-          ""
-        );
-
-
-        video.setAttribute(
-          "webkit-playsinline",
-          ""
-        );
-
-
-        const videoUrl =
-          new URL(
+        })
+        .catch(error=>{
+          /*
+             Autoplay may be temporarily blocked.
+             Since the video is muted, we retry when
+             the browser becomes ready again.
+          */
+          console.warn(
+            "Video autoplay waiting:",
             item.src,
-            document.baseURI
-          ).href;
+            error
+          );
+        });
+    }
+  }
 
 
-        video.src =
-          videoUrl;
+  /*
+     Metadata gives us the real video dimensions.
+  */
+  video.addEventListener(
+    "loadedmetadata",
+    ()=>{
+      updateVideoTexture();
+      tryPlay();
+    }
+  );
 
 
-        console.log(
-          "Loading video:",
-          videoUrl
-        );
+  /*
+     Once actual video data is available,
+     immediately try to start playback.
+  */
+  video.addEventListener(
+    "loadeddata",
+    ()=>{
+      updateVideoTexture();
+      tryPlay();
+    }
+  );
 
 
-        frameData.frame.userData.video =
-          video;
+  video.addEventListener(
+    "canplay",
+    ()=>{
+      updateVideoTexture();
+      tryPlay();
+    }
+  );
 
 
-        let textureAttached =
-          false;
+  video.addEventListener(
+    "canplaythrough",
+    ()=>{
+      updateVideoTexture();
+      tryPlay();
+    }
+  );
 
 
-        const attachTexture =
-          () => {
-
-            if (
-              textureAttached ||
-              !video.videoWidth ||
-              !video.videoHeight
-            ) {
-              return;
-            }
-
-
-            textureAttached = true;
+  /*
+     Keep the texture updated whenever a new video
+     frame becomes available.
+  */
+  video.addEventListener(
+    "timeupdate",
+    ()=>{
+      texture.needsUpdate=true;
+    }
+  );
 
 
-            const texture =
-              new THREE.VideoTexture(
-                video
-              );
-
-
-            texture.encoding =
-              THREE.sRGBEncoding;
-
-
-            texture.minFilter =
-              THREE.LinearFilter;
-
-
-            texture.magFilter =
-              THREE.LinearFilter;
-
-
-            texture.generateMipmaps =
-              false;
-
-
-            fitCover(
-
-              texture,
-
-              video.videoWidth,
-
-              video.videoHeight
-
-            );
-
-
-            frameData.material.map =
-              texture;
-
-
-            frameData.material.color.set(
-              0xffffff
-            );
-
-
-            frameData.material.needsUpdate =
-              true;
-
-
-            video
-              .play()
-              .catch(
-                err => {
-
-                  console.warn(
-                    "Autoplay blocked for:",
-                    videoUrl,
-                    err
-                  );
-
-                }
-              );
-
-          };
-
-
-        video.addEventListener(
-          "loadedmetadata",
-          attachTexture,
-          {
-            once: true
-          }
-        );
-
-
-        video.addEventListener(
-          "loadeddata",
-          () => {
-
-            attachTexture();
-
-            video
-              .play()
-              .catch(
-                () => {}
-              );
-
-          },
-          {
-            once: true
-          }
-        );
-
-
-        video.addEventListener(
-          "canplay",
-          () => {
-
-            attachTexture();
-
-            video
-              .play()
-              .catch(
-                () => {}
-              );
-
-          }
-        );
-
-
-        video.addEventListener(
-          "error",
-          () => {
-
-            console.error(
-              "Video failed to load:",
-              videoUrl,
-              video.error
-            );
-
-          }
-        );
-
-
-        video.load();
-
+  /*
+     If playback gets paused unexpectedly, try again.
+  */
+  video.addEventListener(
+    "pause",
+    ()=>{
+      if(!video.ended){
+        setTimeout(()=>{
+          video.play().catch(()=>{});
+        },150);
       }
+    }
+  );
+
+
+  /*
+     Detailed error reporting.
+  */
+  video.addEventListener(
+    "error",
+    ()=>{
+      console.error(
+        "VIDEO FAILED:",
+        item.src
+      );
+
+      console.error(
+        "Video URL:",
+        videoUrl
+      );
+
+      console.error(
+        "Video error:",
+        video.error
+      );
+
+      /*
+         Keep the frame visible rather than leaving
+         it completely blank.
+      */
+      frameData.material.map=
+        makePlaceholderTexture("video unavailable");
+
+      frameData.material.needsUpdate=true;
+    }
+  );
+
+
+  /*
+     Start loading.
+  */
+  video.load();
+
+
+  /*
+     Extra playback attempts during the first few seconds.
+     This helps with browsers that delay autoplay.
+  */
+  const retryTimes=[
+    300,
+    800,
+    1500,
+    2500,
+    4000
+  ];
+
+  retryTimes.forEach(delay=>{
+
+    setTimeout(()=>{
+
+      if(
+        video.paused &&
+        !video.ended
+      ){
+        video.play().catch(()=>{});
+      }
+
+    },delay);
+
+  });
+
+}
 
 
       /*
