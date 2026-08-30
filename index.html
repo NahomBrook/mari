@@ -40,7 +40,7 @@
   .modal-card{width:min(460px,88vw); background:linear-gradient(160deg,#1e1a2e,#140f22); border:1px solid rgba(217,166,85,.35); border-radius:18px; padding:36px 32px; text-align:center; box-shadow:0 30px 80px rgba(0,0,0,.6); transform:translateY(14px); transition:transform .5s ease; max-height:82vh; overflow-y:auto;}
   .modal-back.show .modal-card{transform:translateY(0);}
   .modal-card h2{font-family:'Cormorant Garamond'; font-weight:600; color:var(--gold-soft); font-size:25px; margin-bottom:10px;}
-  .modal-card p{color:#cfc7dd; font-size:14px; line-height:1.55; margin-bottom:18px;}
+  .modal-card p{color:#ece5f5; font-size:14px; line-height:1.55; margin-bottom:18px;}
   .btn{display:inline-block; padding:12px 26px; border-radius:999px; border:none; background:var(--gold); color:#2b1d0c; font-weight:700; font-size:14px; cursor:pointer; transition:transform .2s, box-shadow .2s;}
   .btn:hover{transform:translateY(-2px); box-shadow:0 10px 24px rgba(217,166,85,.35);}
   .btn-ghost{background:transparent; color:var(--gold-soft); border:1px solid rgba(217,166,85,.4);}
@@ -53,7 +53,7 @@
   .text-input:focus{border-color:var(--gold);}
 
   /* letter / paper */
-  .paper{background:linear-gradient(180deg,#fbf3e0,#f3e4c4); color: #1f130a; border-radius:6px; padding:38px 34px 30px; font-family:'Cormorant Garamond'; font-size:18px; line-height:1.6; box-shadow:0 40px 100px rgba(0,0,0,.65); max-height:74vh; overflow-y:auto; text-align:left;}
+  .paper{background:linear-gradient(180deg,#fbf3e0,#f3e4c4); color:#120a04; border-radius:6px; padding:38px 34px 30px; font-family:'Cormorant Garamond'; font-size:18px; font-weight:500; line-height:1.6; box-shadow:0 40px 100px rgba(0,0,0,.65); max-height:74vh; overflow-y:auto; text-align:left;}
   .paper p{margin-bottom:14px;}
   .paper .lead{font-size:23px; font-weight:600;}
   .paper .close-line{font-style:italic; text-align:right; margin-top:8px;}
@@ -188,6 +188,21 @@ const CONFIG = {
     question: "Where did we finally meet in person — the place we're celebrating at?",
     answer: "nexus hotel"
   },
+
+  // media for the rotating frames in the photo room — put these files in a "media" folder
+  // next to this file.
+  photoRoomMedia: [
+    { type: 'video', src: 'media/clip2.mp4' },
+    { type: 'video', src: 'media/clip3.mp4' },
+    { type: 'video', src: 'media/clip4.mp4' },
+    { type: 'video', src: 'media/clip5.mp4' },
+    { type: 'video', src: 'media/clip6.mp4' },
+    { type: 'video', src: 'media/clip7.mp4' },
+    { type: 'video', src: 'media/clip8.mp4' },
+    { type: 'image', src: 'media/photo1.jpg' },
+    { type: 'image', src: 'media/photo2.PNG' },
+    { type: 'image', src: 'media/photo3.PNG' }
+  ],
 
   birthdayLetter: [
     "Happy Birthday, Mari!",
@@ -604,19 +619,72 @@ function buildPhotoRoom(){
   floor_.position.set(0,-1.15,0);
   scene.add(floor_);
 
-  // flowing frames — a ring of picture frames orbiting the player at varied heights
+  // flowing frames — a ring of picture frames orbiting the player, showing your photos/videos
   const frameGroup = new THREE.Group();
-  const frameColors = [0xb5495b,0xd9a655,0xe8b4bd,0x8c6bb1,0x5b8a9a,0xd97757,0xc79ecf,0x7fb3a3];
-  const count = frameColors.length;
+  const mediaList = CONFIG.photoRoomMedia;
+  const count = mediaList.length;
+  const textureLoader = new THREE.TextureLoader();
+  const frameW = 1.0, frameH = 1.3; // fixed frame size — media crops to fill it (like object-fit: cover)
+
+  function fitCover(tex, sourceW, sourceH){
+    const srcAspect = sourceW / sourceH;
+    const frameAspect = frameW / frameH;
+    if(srcAspect > frameAspect){
+      tex.repeat.set(frameAspect / srcAspect, 1);
+      tex.offset.set((1 - tex.repeat.x)/2, 0);
+    } else {
+      tex.repeat.set(1, srcAspect / frameAspect);
+      tex.offset.set(0, (1 - tex.repeat.y)/2);
+    }
+    tex.needsUpdate = true;
+  }
+
   for(let i=0;i<count;i++){
     const angle = (i/count)*Math.PI*2;
-    const radius = 4.2;
+    const radius = 4.6;
     const single = new THREE.Group();
-    const outer = box(1.1,1.4,0.08, 0x1c1420,{roughness:0.5});
+
+    const outer = box(frameW+0.2, frameH+0.2, 0.08, 0x1c1420, {roughness:0.5});
     single.add(outer);
-    const inner = box(0.9,1.18,0.05, frameColors[i], {roughness:0.35, emissive:frameColors[i], emissiveIntensity:0.25});
-    inner.position.z = 0.04;
-    single.add(inner);
+
+    const item = mediaList[i];
+    const planeMat = new THREE.MeshBasicMaterial({color:0x2a2a2a});
+    const plane = new THREE.Mesh(new THREE.PlaneGeometry(frameW, frameH), planeMat);
+    plane.position.z = 0.045;
+    single.add(plane);
+
+    if(item.type === 'image'){
+      textureLoader.load(
+        item.src,
+        (tex)=>{
+          tex.colorSpace = THREE.SRGBColorSpace;
+          planeMat.map = tex;
+          planeMat.color.set(0xffffff);
+          planeMat.needsUpdate = true;
+          fitCover(tex, tex.image.width, tex.image.height);
+        },
+        undefined,
+        ()=>{ console.warn('Could not load image:', item.src, '— check the file exists and the browser supports its format (HEIC is Safari-only).'); }
+      );
+    } else if(item.type === 'video'){
+      const video = document.createElement('video');
+      video.src = item.src;
+      video.loop = true; video.muted = true; video.playsInline = true; video.autoplay = true;
+      video.crossOrigin = 'anonymous';
+      video.addEventListener('loadedmetadata', ()=>{
+        const vTex = new THREE.VideoTexture(video);
+        vTex.colorSpace = THREE.SRGBColorSpace;
+        planeMat.map = vTex;
+        planeMat.color.set(0xffffff);
+        planeMat.needsUpdate = true;
+        fitCover(vTex, video.videoWidth, video.videoHeight);
+      });
+      video.addEventListener('error', ()=>{
+        console.warn('Could not load video:', item.src, '— MOV/HEVC often only plays in Safari. Convert to .mp4 (H.264) for wider support.');
+      });
+      video.play().catch(()=>{});
+    }
+
     single.position.set(Math.cos(angle)*radius, 1.2+Math.sin(i*1.7)*0.9, Math.sin(angle)*radius);
     single.lookAt(0, single.position.y, 0);
     single.userData.angle = angle;
@@ -694,17 +762,48 @@ function buildRoseRoom(){
   floor_.position.set(0,-1.15,0);
   scene.add(floor_);
 
-  // roses scattered everywhere — floor and low air
-  const roseMat = new THREE.MeshStandardMaterial({color:0xb5495b, roughness:0.5, emissive:0x6e2130, emissiveIntensity:0.2});
-  const petalGeo = new THREE.SphereGeometry(0.16,10,10);
-  for(let i=0;i<140;i++){
-    const petal = new THREE.Mesh(petalGeo, roseMat);
-    const r = Math.random()*6.5;
+  // roses falling from above — shiny tiny red particles raining continuously
+  const petalCount = 260;
+  const roomRadius = 7, topY = 6, floorY = -1.1;
+  const petalGeo = new THREE.BufferGeometry();
+  const petalPositions = new Float32Array(petalCount*3);
+  const petalSpeeds = new Float32Array(petalCount);
+  for(let i=0;i<petalCount;i++){
+    const r = Math.random()*roomRadius;
     const a = Math.random()*Math.PI*2;
-    petal.position.set(Math.cos(a)*r, -1+Math.random()*0.5, Math.sin(a)*r);
-    petal.scale.setScalar(0.6+Math.random()*0.8);
-    scene.add(petal);
+    petalPositions[i*3] = Math.cos(a)*r;
+    petalPositions[i*3+1] = floorY + Math.random()*(topY-floorY);
+    petalPositions[i*3+2] = Math.sin(a)*r;
+    petalSpeeds[i] = 0.004 + Math.random()*0.01;
   }
+  petalGeo.setAttribute('position', new THREE.BufferAttribute(petalPositions,3));
+  const petalMat = new THREE.PointsMaterial({
+    color: 0xff3b5c,
+    size: 0.11,
+    transparent: true,
+    opacity: 0.95,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+    sizeAttenuation: true
+  });
+  const petals = new THREE.Points(petalGeo, petalMat);
+  scene.add(petals);
+
+  animLoopFns.push((t)=>{
+    const pos = petalGeo.attributes.position.array;
+    for(let i=0;i<petalCount;i++){
+      pos[i*3+1] -= petalSpeeds[i];
+      pos[i*3] += Math.sin(t*0.001+i)*0.0015; // gentle flutter
+      if(pos[i*3+1] < floorY){
+        pos[i*3+1] = topY;
+        const r = Math.random()*roomRadius;
+        const a = Math.random()*Math.PI*2;
+        pos[i*3] = Math.cos(a)*r;
+        pos[i*3+2] = Math.sin(a)*r;
+      }
+    }
+    petalGeo.attributes.position.needsUpdate = true;
+  });
 
   playTrack(music.allOfMe, 'all of me');
 
