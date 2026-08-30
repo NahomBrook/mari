@@ -119,7 +119,7 @@
 <div class="modal-back" id="birthday-modal">
   <div class="modal-card">
     <div class="paper" id="birthday-paper"></div>
-    <div style="margin-top:18px;"><button class="btn" id="birthday-continue">continue</button></div>
+    <div style="margin-top:18px; color: #000;"><button class="btn" id="birthday-continue">continue</button></div>
   </div>
 </div>
 
@@ -152,7 +152,7 @@
   <div class="modal-card">
     <div class="paper" id="letter-paper">
       <div id="letter-text"></div>
-      <div id="ask-row" style="display:none;">
+      <div id="ask-row" style="display:none; color: #000;">
         <button class="btn" id="yes-btn">Yes I would love to</button>
         <button class="btn btn-ghost" id="no-btn">I'm afraid I can't</button>
       </div>
@@ -186,11 +186,11 @@ const CONFIG = {
 
   locationQuestion: {
     question: "Where did we finally meet in person — the place we're celebrating at?",
-    answer: "nexus hotel"
+    answer: "bella pasta"
   },
 
   // media for the rotating frames in the photo room — put these files in a "media" folder
-  // next to this file.
+  // next to this file. Frame count always matches this list's length exactly — no empty frames.
   photoRoomMedia: [
     { type: 'video', src: 'media/clip2.mp4' },
     { type: 'video', src: 'media/clip3.mp4' },
@@ -223,28 +223,25 @@ const CONFIG = {
 
   yesThankYou: "Thank you for saying yes, Mar. Every part of this was worth it just to hear that.",
 
-  // audio: create an "audio" folder next to this file with your own copies of these three tracks
+  // audio: one continuous background track plays through the whole experience,
+  // ducking out only while she plays your voice message.
   audio: {
-    happyBirthday: "audio/happy-birthday.mp3",
-    allOfMe: "audio/all-of-me.mp3",
-    voiceMessage: "audio/voice-message.mp3"
+    background: "audio/Ed-Sheeran-Thinking-Out-Loud-Official-Music-Video.m4a",
+    voiceMessage: "audio/nahi-abi-voice-for-mar-1788114826444_ncKSLAgP.m4a"
   }
 };
-/* NOTE ON MUSIC & VOICE: none of these can be embedded by me directly (copyright,
-   and the voice note is yours to record). Create an "audio" folder next to this
-   file containing: happy-birthday.mp3, all-of-me.mp3, and voice-message.mp3
-   (your recorded message to her). The site references them by those exact names.
-   If a file is missing, that step still works — it just has no sound, and the
-   voice-message step shows a "continue" button after a short wait as a fallback. */
+/* NOTE ON AUDIO: create an "audio" folder next to this file containing your two
+   files, named exactly as above. If a file is missing, that step still works —
+   it just has no sound, and the voice-message step shows a "continue" button
+   after a short wait as a fallback. */
 
 /* =========================================================================
    AUDIO MANAGER
 ========================================================================= */
-const music = {
-  bday: new Audio(CONFIG.audio.happyBirthday),
-  allOfMe: new Audio(CONFIG.audio.allOfMe)
-};
-Object.values(music).forEach(a=>{a.loop=true; a.volume=0;});
+const bgMusic = new Audio(CONFIG.audio.background);
+bgMusic.loop = true;
+bgMusic.volume = 0;
+
 const voice = new Audio(CONFIG.audio.voiceMessage);
 voice.loop = false;
 
@@ -257,15 +254,20 @@ function fadeAudio(el,to,ms){
   }
   requestAnimationFrame(step);
 }
-function playTrack(el, label){
-  el.currentTime = 0;
-  el.play().catch(()=>{});
-  fadeAudio(el, 0.55, 1800);
-  document.getElementById('audio-badge').textContent = '♪ ' + label;
+function startBackgroundMusic(){
+  bgMusic.play().catch(()=>{});
+  fadeAudio(bgMusic, 0.5, 1800);
+  document.getElementById('audio-badge').textContent = '♪ thinking out loud';
 }
-function stopAllMusic(ms=1200){
-  fadeAudio(music.bday, 0, ms);
-  fadeAudio(music.allOfMe, 0, ms);
+function duckBackgroundMusic(){
+  fadeAudio(bgMusic, 0, 900);
+}
+function resumeBackgroundMusic(){
+  fadeAudio(bgMusic, 0.5, 900);
+  document.getElementById('audio-badge').textContent = '♪ thinking out loud';
+}
+function stopBackgroundMusic(ms=1500){
+  fadeAudio(bgMusic, 0, ms);
 }
 
 /* =========================================================================
@@ -397,6 +399,7 @@ document.getElementById('welcome-title').textContent = CONFIG.welcome.title;
 document.getElementById('welcome-body').textContent = CONFIG.welcome.body;
 document.getElementById('welcome-btn').textContent = CONFIG.welcome.buttonText;
 document.getElementById('welcome-btn').addEventListener('click', ()=>{
+  startBackgroundMusic(); // first real user gesture — safest point to start audio
   const w = document.getElementById('welcome-screen');
   w.style.transition = 'opacity 1s ease';
   w.style.opacity = '0';
@@ -409,7 +412,6 @@ document.getElementById('welcome-btn').addEventListener('click', ()=>{
 function buildExterior(){
   clearScene();
   animLoopFns = [];
-  document.getElementById('audio-badge').textContent = '';
   scene.background = new THREE.Color(0x0a0a18);
   scene.fog = new THREE.FogExp2(0x0a0a18, 0.028);
 
@@ -619,7 +621,8 @@ function buildPhotoRoom(){
   floor_.position.set(0,-1.15,0);
   scene.add(floor_);
 
-  // flowing frames — a ring of picture frames orbiting the player, showing your photos/videos
+  // flowing frames — a ring of picture frames orbiting the player, showing your photos/videos.
+  // frame count == mediaList.length exactly, so every frame always has content, none left empty.
   const frameGroup = new THREE.Group();
   const mediaList = CONFIG.photoRoomMedia;
   const count = mediaList.length;
@@ -664,7 +667,7 @@ function buildPhotoRoom(){
           fitCover(tex, tex.image.width, tex.image.height);
         },
         undefined,
-        ()=>{ console.warn('Could not load image:', item.src, '— check the file exists and the browser supports its format (HEIC is Safari-only).'); }
+        ()=>{ console.warn('Could not load image:', item.src); }
       );
     } else if(item.type === 'video'){
       const video = document.createElement('video');
@@ -680,7 +683,7 @@ function buildPhotoRoom(){
         fitCover(vTex, video.videoWidth, video.videoHeight);
       });
       video.addEventListener('error', ()=>{
-        console.warn('Could not load video:', item.src, '— MOV/HEVC often only plays in Safari. Convert to .mp4 (H.264) for wider support.');
+        console.warn('Could not load video:', item.src, '— convert to .mp4 (H.264) for wide browser support.');
       });
       video.play().catch(()=>{});
     }
@@ -703,9 +706,8 @@ function buildPhotoRoom(){
     });
   });
 
-  playTrack(music.bday, 'happy birthday, Mari');
-
-  // show birthday letter after a short beat, then location question
+  // show birthday letter after a short beat, then location question — background music
+  // keeps playing continuously through this room, untouched
   setTimeout(()=>{
     openBirthdayLetter(()=>{
       openLocationModal(()=>{
@@ -735,7 +737,7 @@ function buildPhotoRoom(){
 }
 
 /* =========================================================================
-   SCENE 4 — ROSE ROOM (All of Me, voice message, final ask)
+   SCENE 4 — ROSE ROOM (voice message ducks background music, then the ask)
 ========================================================================= */
 function buildRoseRoom(){
   clearScene();
@@ -804,8 +806,6 @@ function buildRoseRoom(){
     }
     petalGeo.attributes.position.needsUpdate = true;
   });
-
-  playTrack(music.allOfMe, 'all of me');
 
   setTimeout(()=>{ openVoiceModal(()=>{ openFinalLetter(); }); }, 1400);
 }
@@ -903,31 +903,53 @@ function openVoiceModal(onDone){
   modal.classList.add('show');
 
   let fallbackTimer = null;
+  let resumedAlready = false;
+
+  function resumeBgOnce(){
+    if(resumedAlready) return;
+    resumedAlready = true;
+    resumeBackgroundMusic();
+  }
 
   function play(){
+    duckBackgroundMusic();
+    resumedAlready = false;
     voice.currentTime = 0;
     voice.play().then(()=>{
       status.textContent = 'playing…';
       playBtn.textContent = '❚❚';
     }).catch(()=>{
-      status.textContent = "couldn't play — add audio/voice-message.mp3";
+      status.textContent = "couldn't play — add the voice message file";
       continueBtn.style.display = 'inline-block';
+      resumeBgOnce();
     });
   }
   playBtn.onclick = ()=>{
-    if(voice.paused){ play(); } else { voice.pause(); playBtn.textContent='▶'; status.textContent='paused'; }
+    if(voice.paused){
+      play();
+    } else {
+      voice.pause();
+      playBtn.textContent='▶';
+      status.textContent='paused';
+      resumeBackgroundMusic();
+      resumedAlready = true;
+    }
   };
   voice.onended = ()=>{
     status.textContent = 'thank you for listening';
     playBtn.textContent = '▶';
     continueBtn.style.display = 'inline-block';
+    resumeBgOnce();
   };
   // fallback in case the audio file isn't present yet
-  fallbackTimer = setTimeout(()=>{ continueBtn.style.display = 'inline-block'; }, 4000);
+  fallbackTimer = setTimeout(()=>{
+    continueBtn.style.display = 'inline-block';
+  }, 4000);
 
   continueBtn.onclick = ()=>{
     clearTimeout(fallbackTimer);
     voice.pause();
+    resumeBgOnce();
     modal.classList.remove('show');
     onDone();
   };
@@ -971,12 +993,12 @@ function setupAskButtons(){
     document.getElementById('letter-modal').classList.remove('show');
     document.getElementById('yes-thankyou').textContent = CONFIG.yesThankYou;
     document.getElementById('yes-celebrate').classList.add('show');
-    stopAllMusic(1500);
+    stopBackgroundMusic(1500);
     launchConfetti();
   };
   noBtn.onclick = ()=>{
     document.getElementById('letter-modal').classList.remove('show');
-    stopAllMusic(1800);
+    stopBackgroundMusic(1800);
     document.getElementById('black-out').classList.add('show');
   };
 }
