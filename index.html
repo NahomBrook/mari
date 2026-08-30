@@ -857,16 +857,16 @@ const CONFIG = {
 
   /* EXACTLY ONE FRAME PER MEDIA ITEM */
   photoRoomMedia:[
-    {type:"video",src:"media/clip2.mp4"},
-    {type:"video",src:"media/clip3.mp4"},
-    {type:"video",src:"media/clip4.mp4"},
-    {type:"video",src:"media/clip5.mp4"},
-    {type:"video",src:"media/clip6.mp4"},
-    {type:"video",src:"media/clip7.mp4"},
-    {type:"video",src:"media/clip8.mp4"},
-    {type:"image",src:"media/photo1.jpg"},
-    {type:"image",src:"media/photo2.PNG"},
-    {type:"image",src:"media/photo3.PNG"}
+    {type:"video",src:"./media/clip2.mp4"},
+    {type:"video",src:"./media/clip3.mp4"},
+    {type:"video",src:"./media/clip4.mp4"},
+    {type:"video",src:"./media/clip5.mp4"},
+    {type:"video",src:"./media/clip6.mp4"},
+    {type:"video",src:"./media/clip7.mp4"},
+    {type:"video",src:"./media/clip8.mp4"},
+    {type:"image",src:"./media/photo1.jpg"},
+    {type:"image",src:"./media/photo2.PNG"},
+    {type:"image",src:"./media/photo3.PNG"}
   ],
 
   birthdayLetter:[
@@ -899,10 +899,10 @@ const CONFIG = {
     "Thank you for saying yes, Mar. Every part of this was worth it just to hear that. ❤️",
 
   audio:{
-    background:"audio/Ed-Sheeran-Thinking-Out-Loud-Official-Music-Video.m4a",
+    background:"./audio/Ed-Sheeran-Thinking-Out-Loud-Official-Music-Video.m4a",
 
     voiceMessage:
-      "audio/nahi-abi-voice-for-mar-1788114826444_ncKSLAgP.m4a"
+      "./audio/nahi-abi-voice-for-mar-1788114826444_ncKSLAgP.m4a"
   }
 
 };
@@ -912,16 +912,25 @@ const CONFIG = {
    AUDIO
 ========================================================= */
 
-const bgMusic = new Audio(CONFIG.audio.background);
-
+const bgMusic = document.createElement("audio");
+bgMusic.id = "bg-music";
 bgMusic.loop = true;
+bgMusic.preload = "auto";
+bgMusic.playsInline = true;
+bgMusic.setAttribute("playsinline", "");
+bgMusic.src = new URL(CONFIG.audio.background, document.baseURI).href;
 bgMusic.volume = 0;
+document.body.appendChild(bgMusic);
 
-const voice = new Audio(CONFIG.audio.voiceMessage);
-
+const voice = document.createElement("audio");
+voice.id = "voice-message";
 voice.loop = false;
 voice.preload = "auto";
+voice.playsInline = true;
+voice.setAttribute("playsinline", "");
+voice.src = new URL(CONFIG.audio.voiceMessage, document.baseURI).href;
 voice.volume = 1;
+document.body.appendChild(voice);
 
 let bgTargetVolume = 0.45;
 let audioFadeFrame = null;
@@ -2411,7 +2420,9 @@ function buildPhotoRoom(){
     video.setAttribute("muted","");
     video.setAttribute("playsinline","");
     video.setAttribute("webkit-playsinline","");
-    video.src=item.src;
+    // Resolve the asset against the deployed page URL. This avoids path
+    // problems on Vercel/GitHub Pages and keeps filenames case-sensitive.
+    video.src=new URL(item.src,document.baseURI).href;
 
     frameData.frame.userData.video=video;
 
@@ -2436,6 +2447,7 @@ function buildPhotoRoom(){
     };
 
     video.addEventListener("loadedmetadata",attachTexture,{once:true});
+    video.addEventListener("loadeddata",()=>{ video.play().catch(()=>{}); },{once:true});
 
     video.addEventListener("canplay",()=>{
       video.play().catch(()=>{});
@@ -3173,10 +3185,15 @@ function openVoiceModal(onDone){
 
   /* Reset and explicitly load the M4A before the user presses play. */
   voice.pause();
-  voice.currentTime=0;
-  voice.src=CONFIG.audio.voiceMessage;
+  try{ voice.currentTime=0; }catch(e){}
+  voice.src=new URL(CONFIG.audio.voiceMessage,document.baseURI).href;
   voice.preload="auto";
   voice.load();
+
+  const voiceUrl=new URL(CONFIG.audio.voiceMessage,document.baseURI).href;
+  const canPlayM4A=voice.canPlayType("audio/mp4") || voice.canPlayType("audio/x-m4a") || voice.canPlayType("audio/aac");
+  console.log("Voice message URL:",voiceUrl);
+  console.log("M4A playback support:",canPlayM4A || "unknown");
 
   function resumeBackground(){
     if(completed) return;
@@ -3190,18 +3207,22 @@ function openVoiceModal(onDone){
 
   function handleVoiceError(){
     console.error("Voice message could not be loaded/played:",CONFIG.audio.voiceMessage,voice.error);
-    status.textContent="the voice message couldn't be played — check the audio file path";
+    const code=voice.error ? voice.error.code : "unknown";
+    status.textContent="the voice message could not be played on this browser.";
+    console.error("Check that this exact file exists in /audio and uses AAC audio in an M4A container:",voiceUrl,"mediaErrorCode:",code);
     playButton.disabled=false;
     showContinue();
     resumeBackground();
   }
 
-  voice.addEventListener("canplay",()=>{
-    if(!audioStarted){
-      playButton.disabled=false;
-      status.textContent="tap to listen";
-    }
-  },{once:true});
+  const enableVoiceButton=()=>{
+    playButton.disabled=false;
+    if(!audioStarted) status.textContent="tap to listen";
+  };
+
+  voice.addEventListener("loadedmetadata",enableVoiceButton,{once:true});
+  voice.addEventListener("canplay",enableVoiceButton,{once:true});
+  voice.addEventListener("canplaythrough",enableVoiceButton,{once:true});
 
   voice.addEventListener("error",handleVoiceError,{once:true});
 
