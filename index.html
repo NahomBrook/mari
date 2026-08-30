@@ -238,6 +238,18 @@ canvas{
   font-weight:600;
 }
 
+
+.paper,
+.paper p,
+#birthday-paper,
+#birthday-paper p,
+#letter-paper,
+#letter-paper p,
+#welcome-paper,
+#welcome-paper p{
+  color:#120a04 !important;
+}
+
 .paper .close-line{
   font-style:italic;
   text-align:right;
@@ -589,6 +601,26 @@ canvas{
     max-height:82vh;
   }
 }
+
+@media(max-width:599px){
+  .paper{
+    width:100%;
+    max-width:540px;
+    max-height:76vh;
+    padding:26px 20px;
+    font-size:17px;
+  }
+  .paper .lead{font-size:25px;}
+  .modal-back{padding:14px;}
+  .modal-card{width:100%;max-width:460px;max-height:90vh;padding:24px 16px;}
+  .modal-card h2{font-size:25px;}
+  .modal-card p{font-size:13px;}
+  #ask-row{flex-direction:column;}
+  #ask-row .btn{width:100%;}
+  .date-row{gap:6px;}
+  .date-row select{min-height:50px;font-size:14px;}
+  #audio-badge{max-width:38vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+}
 </style>
 
 </head>
@@ -607,12 +639,10 @@ canvas{
       <p class="lead" id="welcome-title"></p>
       <p id="welcome-body"></p>
 
-```
   <div style="margin-top:25px;">
     <button class="btn" id="welcome-btn"></button>
   </div>
 </div>
-```
 
   </div>
 </div>
@@ -641,7 +671,6 @@ canvas{
 <div class="modal-back" id="date-modal">
   <div class="modal-card">
 
-```
 <h2>A box on the table</h2>
 
 <p id="date-question">
@@ -659,7 +688,6 @@ canvas{
 <button class="btn" id="date-submit">
   unlock
 </button>
-```
 
   </div>
 </div>
@@ -671,7 +699,6 @@ canvas{
 <div class="modal-back" id="birthday-modal">
   <div class="modal-card">
 
-```
 <div class="paper" id="birthday-paper"></div>
 
 <div style="margin-top:18px;">
@@ -679,7 +706,6 @@ canvas{
     continue
   </button>
 </div>
-```
 
   </div>
 </div>
@@ -691,7 +717,6 @@ canvas{
 <div class="modal-back" id="location-modal">
   <div class="modal-card">
 
-```
 <h2>one more door</h2>
 
 <p id="location-question">
@@ -713,7 +738,6 @@ canvas{
 <button class="btn" id="location-submit">
   open
 </button>
-```
 
   </div>
 </div>
@@ -725,7 +749,6 @@ canvas{
 <div class="modal-back" id="voice-modal">
   <div class="modal-card">
 
-```
 <h2>a message, in my voice</h2>
 
 <p>
@@ -739,7 +762,7 @@ canvas{
     ▶
   </button>
 
-  <div id="voice-status">
+  <div id="voice-status" aria-live="polite">
     tap to listen
   </div>
 
@@ -754,7 +777,6 @@ canvas{
     continue
   </button>
 </div>
-```
 
   </div>
 </div>
@@ -767,7 +789,6 @@ canvas{
 
   <div class="modal-card">
 
-```
 <div class="paper" id="letter-paper">
 
   <div id="letter-text"></div>
@@ -785,7 +806,6 @@ canvas{
   </div>
 
 </div>
-```
 
   </div>
 
@@ -2218,524 +2238,289 @@ function buildFoyer(){
 function buildPhotoRoom(){
 
   clearScene();
-
   look.enabled=true;
 
-  document.getElementById("hint")
-    .textContent=
-      "swipe to look around";
+  const hint=document.getElementById("hint");
+  hint.textContent="swipe to look around";
+  hint.style.opacity=".75";
 
-  document.getElementById("hint")
-    .style.opacity=".75";
+  scene.background=new THREE.Color(0x2a1d3a);
 
-
-  scene.background=
-    new THREE.Color(0x2a1d3a);
-
-
-  camera.position.set(
-    0,
-    1.8,
-    0
-  );
-
+  camera.position.set(0,1.8,0);
   camera.rotation.set(0,0,0);
 
+  scene.add(new THREE.AmbientLight(0xe8b4bd,.5));
 
-  scene.add(
-    new THREE.AmbientLight(
-      0xe8b4bd,
-      .5
-    )
+  const room=new THREE.Mesh(
+    new THREE.BoxGeometry(16,7,16),
+    new THREE.MeshStandardMaterial({
+      color:0x352646,
+      roughness:.95,
+      side:THREE.BackSide
+    })
   );
-
-
-  const room=
-    new THREE.Mesh(
-      new THREE.BoxGeometry(
-        16,
-        7,
-        16
-      ),
-      new THREE.MeshStandardMaterial({
-        color:0x352646,
-        roughness:.95,
-        side:THREE.BackSide
-      })
-    );
-
   room.position.y=2.3;
-
   scene.add(room);
 
-
-  const floor=
-    box(
-      16,
-      .2,
-      16,
-      0x241833,
-      {roughness:.85}
-    );
-
+  const floor=box(16,.2,16,0x241833,{roughness:.85});
   floor.position.y=-1.15;
-
   scene.add(floor);
 
-
-  const roomLight=
-    new THREE.PointLight(
-      0xd9a655,
-      .95,
-      20
-    );
-
-  roomLight.position.set(
-    0,
-    4,
-    0
-  );
-
+  const roomLight=new THREE.PointLight(0xd9a655,.95,20);
+  roomLight.position.set(0,4,0);
   scene.add(roomLight);
-
 
   /* =====================================================
      MEDIA FRAMES
 
-     IMPORTANT:
-     A frame is only added after the media successfully
-     loads. This means there can NEVER be an empty frame.
+     There is ALWAYS exactly one frame for every item in
+     CONFIG.photoRoomMedia. Images and videos are both
+     supported. Videos are muted/inline so they can autoplay
+     on mobile browsers while the background music remains
+     the only audible track.
   ===================================================== */
 
-  const mediaList=
-    CONFIG.photoRoomMedia;
-
-  const frameGroup=
-    new THREE.Group();
-
+  const mediaList=CONFIG.photoRoomMedia;
+  const frameGroup=new THREE.Group();
   scene.add(frameGroup);
-
 
   const frameWidth=1.05;
   const frameHeight=1.35;
+  const count=mediaList.length;
+  const radius=4.6;
 
-  const loadedFrames=[];
+  function fitCover(texture,sourceWidth,sourceHeight){
+    if(!sourceWidth || !sourceHeight) return;
 
-
-  function fitCover(
-    texture,
-    sourceWidth,
-    sourceHeight
-  ){
-
-    const sourceAspect=
-      sourceWidth/sourceHeight;
-
-    const frameAspect=
-      frameWidth/frameHeight;
-
+    const sourceAspect=sourceWidth/sourceHeight;
+    const frameAspect=frameWidth/frameHeight;
 
     if(sourceAspect>frameAspect){
-
-      texture.repeat.set(
-        frameAspect/sourceAspect,
-        1
-      );
-
-      texture.offset.set(
-        (1-texture.repeat.x)/2,
-        0
-      );
-
+      texture.repeat.set(frameAspect/sourceAspect,1);
+      texture.offset.set((1-texture.repeat.x)/2,0);
     }else{
-
-      texture.repeat.set(
-        1,
-        sourceAspect/frameAspect
-      );
-
-      texture.offset.set(
-        0,
-        (1-texture.repeat.y)/2
-      );
-
+      texture.repeat.set(1,sourceAspect/frameAspect);
+      texture.offset.set(0,(1-texture.repeat.y)/2);
     }
 
     texture.needsUpdate=true;
-
   }
 
+  function makePlaceholderTexture(label){
+    const canvas=document.createElement("canvas");
+    canvas.width=512;
+    canvas.height=640;
+    const ctx=canvas.getContext("2d");
 
-  function createFrame(texture){
+    const gradient=ctx.createLinearGradient(0,0,512,640);
+    gradient.addColorStop(0,"#392746");
+    gradient.addColorStop(1,"#1b1226");
+    ctx.fillStyle=gradient;
+    ctx.fillRect(0,0,512,640);
 
-    const frame=
-      new THREE.Group();
+    ctx.fillStyle="rgba(240,217,168,.9)";
+    ctx.font="600 28px Quicksand, sans-serif";
+    ctx.textAlign="center";
+    ctx.textBaseline="middle";
+    ctx.fillText(label,256,320);
 
+    const texture=new THREE.CanvasTexture(canvas);
+    texture.encoding=THREE.sRGBEncoding;
+    return texture;
+  }
 
-    const outer=
-      box(
-        frameWidth+.18,
-        frameHeight+.18,
-        .09,
-        0x17111e,
-        {
-          roughness:.45,
-          metalness:.1
-        }
-      );
+  function createFrame(index,item){
+    const angle=(index/count)*Math.PI*2;
 
+    const frame=new THREE.Group();
+
+    const outer=box(
+      frameWidth+.18,
+      frameHeight+.18,
+      .09,
+      0x17111e,
+      {roughness:.45,metalness:.1}
+    );
     frame.add(outer);
 
+    /* Every frame starts with visible content — never an empty plane. */
+    const material=new THREE.MeshBasicMaterial({
+      map:makePlaceholderTexture("memory"),
+      color:0xffffff
+    });
 
-    const material=
-      new THREE.MeshBasicMaterial({
-        map:texture,
-        color:0xffffff
-      });
-
-
-    const imagePlane=
-      new THREE.Mesh(
-        new THREE.PlaneGeometry(
-          frameWidth,
-          frameHeight
-        ),
-        material
-      );
-
+    const imagePlane=new THREE.Mesh(
+      new THREE.PlaneGeometry(frameWidth,frameHeight),
+      material
+    );
     imagePlane.position.z=.055;
-
     frame.add(imagePlane);
-
-
-    return frame;
-
-  }
-
-
-  function addLoadedFrame(frame){
-
-    const index=
-      loadedFrames.length;
-
-    const count=
-      mediaList.length;
-
-    const angle=
-      (index/count)*Math.PI*2;
-
-    const radius=4.6;
 
     frame.position.set(
       Math.cos(angle)*radius,
-      1.4+
-        Math.sin(index*1.7)*.8,
+      1.4+Math.sin(index*1.7)*.8,
       Math.sin(angle)*radius
     );
 
     frame.userData.angle=angle;
     frame.userData.radius=radius;
     frame.userData.baseY=frame.position.y;
+    frame.userData.index=index;
+    frame.userData.item=item;
+    frame.userData.material=material;
+    frame.userData.video=null;
 
-    frame.lookAt(
-      0,
-      frame.position.y,
-      0
-    );
-
+    frame.lookAt(0,frame.position.y,0);
     frameGroup.add(frame);
 
-    loadedFrames.push(frame);
-
+    return {frame,material};
   }
 
+  /* Create ALL frames immediately, so the count can never change. */
+  const frames=mediaList.map((item,index)=>createFrame(index,item));
 
-  function loadImage(item){
+  function loadImage(item,material,index){
+    const loader=new THREE.TextureLoader();
 
-    return new Promise(
-      resolve=>{
-
-        const loader=
-          new THREE.TextureLoader();
-
-        loader.load(
-
-          item.src,
-
-          texture=>{
-
-            texture.colorSpace=
-              THREE.SRGBColorSpace;
-
-            fitCover(
-              texture,
-              texture.image.width,
-              texture.image.height
-            );
-
-            resolve(
-              createFrame(texture)
-            );
-
-          },
-
-          undefined,
-
-          ()=>{
-            console.warn(
-              "Could not load:",
-              item.src
-            );
-
-            resolve(null);
-          }
-
-        );
-
+    loader.load(
+      item.src,
+      texture=>{
+        texture.encoding=THREE.sRGBEncoding;
+        fitCover(texture,texture.image.width,texture.image.height);
+        material.map=texture;
+        material.color.set(0xffffff);
+        material.needsUpdate=true;
+      },
+      undefined,
+      error=>{
+        console.error("Image failed to load:",item.src,error);
       }
     );
-
   }
 
-
-  function loadVideo(item){
-
-    return new Promise(
-      resolve=>{
-
-        const video=
-          document.createElement("video");
-
-        video.src=item.src;
-
-        video.loop=true;
-        video.muted=true;
-        video.playsInline=true;
-        video.autoplay=true;
-        video.preload="auto";
-
-        video.addEventListener(
-          "loadedmetadata",
-          ()=>{
-
-            const texture=
-              new THREE.VideoTexture(
-                video
-              );
-
-            texture.colorSpace=
-              THREE.SRGBColorSpace;
-
-            fitCover(
-              texture,
-              video.videoWidth,
-              video.videoHeight
-            );
-
-            video.play().catch(
-              ()=>{}
-            );
-
-            const frame=
-              createFrame(texture);
-
-            frame.userData.video=video;
-
-            resolve(frame);
-
-          },
-          {once:true}
-        );
-
-
-        video.addEventListener(
-          "error",
-          ()=>{
-            console.warn(
-              "Could not load:",
-              item.src
-            );
-
-            resolve(null);
-          },
-          {once:true}
-        );
-
-      }
-    );
-
-  }
-
-
-  /* Load sequentially.
-     Successful media creates exactly one frame.
-     Failed media creates ZERO frames. */
-
-  (async function(){
-
-    for(
-      const item of mediaList
-    ){
-
-      let frame=null;
-
-      if(item.type==="image"){
-
-        frame=
-          await loadImage(item);
-
-      }else{
-
-        frame=
-          await loadVideo(item);
-
-      }
-
-      if(frame){
-
-        addLoadedFrame(frame);
-
-      }
-
-    }
-
-  })();
-
-
-  animationFunctions.push(
-    time=>{
-
-      frameGroup.children.forEach(
-        (frame,index)=>{
-
-          const angle=
-            frame.userData.angle+
-            time*.00018;
-
-          frame.position.x=
-            Math.cos(angle)*
-            frame.userData.radius;
-
-          frame.position.z=
-            Math.sin(angle)*
-            frame.userData.radius;
-
-          frame.position.y=
-            frame.userData.baseY+
-            Math.sin(
-              time*.0006+index
-            )*.22;
-
-          frame.lookAt(
-            0,
-            frame.position.y,
-            0
-          );
-
-        }
-      );
-
-    }
-  );
-
-
-  /* Birthday message appears after the room settles */
-
-  setTimeout(
-    ()=>{
-
-      openBirthdayLetter(
-        ()=>{
-
-          openLocationModal(
-            ()=>{
-              spawnNextDoor();
-            }
-          );
-
-        }
-      );
-
-    },
-    1800
-  );
-
-
-  function spawnNextDoor(){
-
-    document.getElementById("hint")
-      .textContent=
-        "one more door";
-
-
-    const nextDoor=
-      box(
-        1.5,
-        2.6,
-        .2,
-        0xb5495b,
-        {
-          emissive:0xb5495b,
-          emissiveIntensity:.9,
-          roughness:.3
-        }
-      );
-
-    nextDoor.position.set(
-      0,
-      1.1,
-      7.3
-    );
-
-    scene.add(nextDoor);
-
-
-    const glow=
-      new THREE.PointLight(
-        0xb5495b,
-        1.2,
-        8
-      );
-
-    glow.position.set(
-      0,
-      1.4,
-      6.6
-    );
-
-    scene.add(glow);
-
-
-    animationFunctions.push(
-      time=>{
-        nextDoor.material.emissiveIntensity=
-          .75+
-          Math.sin(time*.003)*.25;
-      }
-    );
-
-
-    clickables.push({
-
-      mesh:nextDoor,
-
-      onClick:()=>{
-
-        document.getElementById("hint")
-          .style.opacity="0";
-
-        fadeTransition(
-          buildRoseRoom
-        );
-
-      }
-
+  function loadVideo(item,frameData,index){
+    const video=document.createElement("video");
+
+    video.muted=true;
+    video.defaultMuted=true;
+    video.loop=true;
+    video.autoplay=true;
+    video.playsInline=true;
+    video.preload="auto";
+    video.controls=false;
+    video.setAttribute("muted","");
+    video.setAttribute("playsinline","");
+    video.setAttribute("webkit-playsinline","");
+    video.src=item.src;
+
+    frameData.frame.userData.video=video;
+
+    const attachTexture=()=>{
+      if(!video.videoWidth || !video.videoHeight) return;
+
+      const texture=new THREE.VideoTexture(video);
+      texture.encoding=THREE.sRGBEncoding;
+      texture.minFilter=THREE.LinearFilter;
+      texture.magFilter=THREE.LinearFilter;
+      texture.generateMipmaps=false;
+
+      fitCover(texture,video.videoWidth,video.videoHeight);
+
+      frameData.material.map=texture;
+      frameData.material.color.set(0xffffff);
+      frameData.material.needsUpdate=true;
+
+      video.play().catch(err=>{
+        console.warn("Autoplay blocked for",item.src,err);
+      });
+    };
+
+    video.addEventListener("loadedmetadata",attachTexture,{once:true});
+
+    video.addEventListener("canplay",()=>{
+      video.play().catch(()=>{});
     });
 
+    video.addEventListener("error",()=>{
+      console.error(
+        "Video failed to load:",
+        item.src,
+        video.error
+      );
+    });
+
+    video.load();
   }
 
-}
+  /* Load every asset in parallel — one broken video can never
+     prevent the remaining photos/videos from appearing. */
+  mediaList.forEach((item,index)=>{
+    if(item.type==="image"){
+      loadImage(item,frames[index].material,index);
+    }else if(item.type==="video"){
+      loadVideo(item,frames[index],index);
+    }
+  });
 
+  animationFunctions.push(time=>{
+    frameGroup.children.forEach((frame,index)=>{
+      const angle=frame.userData.angle+time*.00018;
+
+      frame.position.x=Math.cos(angle)*frame.userData.radius;
+      frame.position.z=Math.sin(angle)*frame.userData.radius;
+      frame.position.y=
+        frame.userData.baseY+
+        Math.sin(time*.0006+index)*.22;
+
+      frame.lookAt(0,frame.position.y,0);
+    });
+  });
+
+  /* Birthday message appears after the room settles. */
+  setTimeout(()=>{
+    openBirthdayLetter(()=>{
+      openLocationModal(()=>{
+        spawnNextDoor();
+      });
+    });
+  },1800);
+
+  function spawnNextDoor(){
+    hint.textContent="one more door";
+
+    const nextDoor=box(
+      1.5,
+      2.6,
+      .2,
+      0xb5495b,
+      {
+        emissive:0xb5495b,
+        emissiveIntensity:.9,
+        roughness:.3
+      }
+    );
+
+    nextDoor.position.set(0,1.1,7.3);
+    scene.add(nextDoor);
+
+    const glow=new THREE.PointLight(0xb5495b,1.2,8);
+    glow.position.set(0,1.4,6.6);
+    scene.add(glow);
+
+    animationFunctions.push(time=>{
+      nextDoor.material.emissiveIntensity=
+        .75+Math.sin(time*.003)*.25;
+    });
+
+    clickables.push({
+      mesh:nextDoor,
+      onClick:()=>{
+        hint.style.opacity="0";
+        fadeTransition(buildRoseRoom);
+      }
+    });
+  }
+}
 
 /* =========================================================
    SCENE 4 — ROSE ROOM
@@ -3372,133 +3157,114 @@ function openLocationModal(onSuccess){
 
 function openVoiceModal(onDone){
 
-  const modal=
-    document.getElementById(
-      "voice-modal"
-    );
-
-  const playButton=
-    document.getElementById(
-      "play-voice"
-    );
-
-  const status=
-    document.getElementById(
-      "voice-status"
-    );
-
-  const continueButton=
-    document.getElementById(
-      "voice-continue"
-    );
-
+  const modal=document.getElementById("voice-modal");
+  const playButton=document.getElementById("play-voice");
+  const status=document.getElementById("voice-status");
+  const continueButton=document.getElementById("voice-continue");
 
   modal.classList.add("show");
-
   continueButton.style.display="none";
-
-  status.textContent=
-    "tap to listen";
-
+  status.textContent="loading your message…";
   playButton.textContent="▶";
+  playButton.disabled=true;
 
+  let completed=false;
+  let audioStarted=false;
 
-  let finished=false;
+  /* Reset and explicitly load the M4A before the user presses play. */
+  voice.pause();
+  voice.currentTime=0;
+  voice.src=CONFIG.audio.voiceMessage;
+  voice.preload="auto";
+  voice.load();
 
-
-  function resume(){
-
-    if(finished) return;
-
-    finished=true;
-
+  function resumeBackground(){
+    if(completed) return;
+    completed=true;
     resumeBackgroundMusic();
-
   }
 
-
-  function playVoice(){
-
-    duckBackgroundMusic();
-
-    voice.currentTime=0;
-
-    voice.play()
-      .then(()=>{
-
-        status.textContent=
-          "playing…";
-
-        playButton.textContent="❚❚";
-
-      })
-      .catch(()=>{
-
-        status.textContent=
-          "the voice message couldn't be played";
-
-        continueButton.style.display=
-          "inline-block";
-
-        resume();
-
-      });
-
+  function showContinue(){
+    continueButton.style.display="inline-block";
   }
 
+  function handleVoiceError(){
+    console.error("Voice message could not be loaded/played:",CONFIG.audio.voiceMessage,voice.error);
+    status.textContent="the voice message couldn't be played — check the audio file path";
+    playButton.disabled=false;
+    showContinue();
+    resumeBackground();
+  }
 
-  playButton.onclick=()=>{
+  voice.addEventListener("canplay",()=>{
+    if(!audioStarted){
+      playButton.disabled=false;
+      status.textContent="tap to listen";
+    }
+  },{once:true});
+
+  voice.addEventListener("error",handleVoiceError,{once:true});
+
+  async function playVoice(){
+    try{
+      duckBackgroundMusic();
+
+      if(voice.ended){
+        voice.currentTime=0;
+      }
+
+      audioStarted=true;
+      status.textContent="playing…";
+      playButton.textContent="❚❚";
+
+      await voice.play();
+
+    }catch(error){
+      console.error("Voice play() failed:",error);
+      status.textContent="couldn't play the voice message — tap again";
+      playButton.textContent="▶";
+      resumeBackground();
+      showContinue();
+    }
+  }
+
+  playButton.onclick=async()=>{
+    if(playButton.disabled) return;
 
     if(voice.paused){
-
-      playVoice();
-
+      await playVoice();
     }else{
-
       voice.pause();
-
       playButton.textContent="▶";
-
       status.textContent="paused";
-
-      resume();
-
+      resumeBackgroundMusic();
     }
-
   };
-
 
   voice.onended=()=>{
-
-    status.textContent=
-      "thank you for listening ❤️";
-
+    status.textContent="thank you for listening ❤️";
     playButton.textContent="▶";
-
-    continueButton.style.display=
-      "inline-block";
-
-    resume();
-
+    showContinue();
+    resumeBackground();
   };
-
 
   continueButton.onclick=()=>{
-
     voice.pause();
-
-    resume();
-
-    modal.classList.remove(
-      "show"
-    );
-
+    voice.currentTime=0;
+    resumeBackground();
+    modal.classList.remove("show");
     onDone();
-
   };
 
+  /* If the browser does not expose canplay quickly, the user can still
+     attempt playback from the same tap; do not permanently lock the UI. */
+  setTimeout(()=>{
+    playButton.disabled=false;
+    if(!audioStarted && status.textContent.includes("loading")){
+      status.textContent="tap to listen";
+    }
+  },1800);
 }
-
 
 /* =========================================================
    FINAL LETTER
