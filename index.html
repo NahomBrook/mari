@@ -970,17 +970,15 @@
 
       photoRoomMedia: [
 
-        { type: "video", src: "./media/clip2.mp4" },
-        { type: "video", src: "./media/clip3.mp4" },
-        { type: "video", src: "./media/clip4.mp4" },
-        { type: "video", src: "./media/clip5.mp4" },
-        { type: "video", src: "./media/clip6.mp4" },
-        { type: "video", src: "./media/clip7.mp4" },
-        { type: "video", src: "./media/clip8.mp4" },
-
-        { type: "image", src: "./media/photo1.jpg" },
+        { type: "image", src: "./media/photo1.PNG" },
         { type: "image", src: "./media/photo2.PNG" },
-        { type: "image", src: "./media/photo3.PNG" }
+        { type: "image", src: "./media/photo3.PNG" },
+        { type: "image", src: "./media/photo4.PNG" },
+        { type: "image", src: "./media/photo5.PNG" },
+        { type: "image", src: "./media/photo6.PNG" },
+        { type: "image", src: "./media/photo7.PNG" },
+        { type: "image", src: "./media/photo8.PNG" },
+        { type: "image", src: "./media/photo9.PNG" }
 
       ],
 
@@ -2921,7 +2919,7 @@
       /* =====================================================
          MEDIA FRAMES
 
-         Every image/video gets its own frame.
+         Every image gets its own frame.
       ===================================================== */
 
       const mediaList =
@@ -3514,7 +3512,7 @@ function loadVideo(item, frameData, index) {
 }
 
       /*
-        Load every image/video independently.
+        Load every image independently.
         One broken asset will NOT stop the others.
       */
 
