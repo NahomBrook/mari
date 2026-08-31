@@ -1,4 +1,3 @@
-```html
 <!DOCTYPE html>
 <html lang="en">
 
@@ -3324,115 +3323,93 @@
 
 
 
-function loadVideo(item,frameData,index){
+function loadVideo(item, frameData, index) {
 
-  const video=document.createElement("video");
-
-  /*
-     IMPORTANT:
-     Configure the video BEFORE assigning the source.
-     This improves autoplay compatibility across Chrome,
-     Safari and mobile browsers.
-  */
-  video.muted=true;
-  video.defaultMuted=true;
-  video.volume=0;
-
-  video.loop=true;
-  video.autoplay=true;
-  video.playsInline=true;
-  video.controls=false;
-
-  video.preload="auto";
-
-  video.setAttribute("muted","");
-  video.setAttribute("autoplay","");
-  video.setAttribute("playsinline","");
-  video.setAttribute("webkit-playsinline","");
+  const video = document.createElement("video");
 
   /*
-     Resolve the path against the actual deployed page URL.
+     Keep the video completely silent so browsers allow autoplay.
+     The video element does not need to be visible in the DOM because
+     THREE.VideoTexture reads its frames directly from this element.
   */
-  const videoUrl=
-    new URL(item.src,document.baseURI).href;
+  video.muted = true;
+  video.defaultMuted = true;
+  video.volume = 0;
+  video.autoplay = true;
+  video.loop = true;
+  video.playsInline = true;
+  video.controls = false;
+  video.preload = "auto";
 
-  video.src=videoUrl;
+  video.setAttribute("muted", "");
+  video.setAttribute("autoplay", "");
+  video.setAttribute("playsinline", "");
+  video.setAttribute("webkit-playsinline", "");
+
+  /* Resolve ./media/... relative to the actual index.html URL. */
+  const videoUrl = new URL(item.src, document.baseURI).href;
+
+  console.log("[MEDIA] Loading video:", videoUrl);
 
   /*
-     Keep the video reference attached to the frame.
+     Set the source through a <source> element. This is more reliable
+     across browsers than relying only on video.src and also lets the
+     browser identify the MP4 MIME type explicitly.
   */
-  frameData.frame.userData.video=video;
+  const source = document.createElement("source");
+  source.src = videoUrl;
+  source.type = "video/mp4";
+  video.appendChild(source);
 
+  /* Keep both the video and texture attached to the frame. */
+  frameData.frame.userData.video = video;
 
-  /*
-     CREATE THE VIDEOTEXTURE IMMEDIATELY.
-     
-     Previously this was only created after loadedmetadata.
-     That could leave an empty frame while the browser was
-     loading the video.
-  */
-  const texture=new THREE.VideoTexture(video);
+  const texture = new THREE.VideoTexture(video);
 
-  texture.encoding=THREE.sRGBEncoding;
+  if ("colorSpace" in texture && THREE.SRGBColorSpace) {
+    texture.colorSpace = THREE.SRGBColorSpace;
+  } else {
+    texture.encoding = THREE.sRGBEncoding;
+  }
 
-  texture.minFilter=THREE.LinearFilter;
-  texture.magFilter=THREE.LinearFilter;
+  texture.minFilter = THREE.LinearFilter;
+  texture.magFilter = THREE.LinearFilter;
+  texture.generateMipmaps = false;
+  texture.needsUpdate = true;
 
-  texture.generateMipmaps=false;
+  frameData.frame.userData.videoTexture = texture;
 
-  /*
-     Attach the texture immediately.
-  */
-  frameData.material.map=texture;
+  /* Put the video texture on the frame immediately. */
+  frameData.material.map = texture;
   frameData.material.color.set(0xffffff);
-  frameData.material.needsUpdate=true;
+  frameData.material.needsUpdate = true;
 
-
-  /*
-     Correct the crop once the video's dimensions are known.
-  */
-  function updateVideoTexture(){
-
-    if(video.videoWidth && video.videoHeight){
-
+  function updateVideoTexture() {
+    if (video.videoWidth > 0 && video.videoHeight > 0) {
       fitCover(
         texture,
         video.videoWidth,
         video.videoHeight
       );
-
-      texture.needsUpdate=true;
+      texture.needsUpdate = true;
     }
   }
 
+  function playVideo() {
+    if (video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) {
+      return;
+    }
 
-  /*
-     Try playback whenever the browser tells us
-     that enough of the video is available.
-  */
-  function tryPlay(){
+    const promise = video.play();
 
-    updateVideoTexture();
-
-    const promise=video.play();
-
-    if(promise !== undefined){
-
+    if (promise && typeof promise.catch === "function") {
       promise
-        .then(()=>{
-          console.log(
-            "Video playing:",
-            item.src
-          );
+        .then(() => {
+          console.log("[MEDIA] Playing video:", item.src);
         })
-        .catch(error=>{
-          /*
-             Autoplay may be temporarily blocked.
-             Since the video is muted, we retry when
-             the browser becomes ready again.
-          */
+        .catch(error => {
           console.warn(
-            "Video autoplay waiting:",
+            "[MEDIA] Autoplay waiting for browser permission:",
             item.src,
             error
           );
@@ -3440,145 +3417,101 @@ function loadVideo(item,frameData,index){
     }
   }
 
-
   /*
-     Metadata gives us the real video dimensions.
+     Video metadata is the point where the real dimensions become known.
+     Recalculate the cover crop here.
   */
-  video.addEventListener(
-    "loadedmetadata",
-    ()=>{
-      updateVideoTexture();
-      tryPlay();
-    }
-  );
-
-
-  /*
-     Once actual video data is available,
-     immediately try to start playback.
-  */
-  video.addEventListener(
-    "loadeddata",
-    ()=>{
-      updateVideoTexture();
-      tryPlay();
-    }
-  );
-
-
-  video.addEventListener(
-    "canplay",
-    ()=>{
-      updateVideoTexture();
-      tryPlay();
-    }
-  );
-
-
-  video.addEventListener(
-    "canplaythrough",
-    ()=>{
-      updateVideoTexture();
-      tryPlay();
-    }
-  );
-
-
-  /*
-     Keep the texture updated whenever a new video
-     frame becomes available.
-  */
-  video.addEventListener(
-    "timeupdate",
-    ()=>{
-      texture.needsUpdate=true;
-    }
-  );
-
-
-  /*
-     If playback gets paused unexpectedly, try again.
-  */
-  video.addEventListener(
-    "pause",
-    ()=>{
-      if(!video.ended){
-        setTimeout(()=>{
-          video.play().catch(()=>{});
-        },150);
-      }
-    }
-  );
-
-
-  /*
-     Detailed error reporting.
-  */
-  video.addEventListener(
-    "error",
-    ()=>{
-      console.error(
-        "VIDEO FAILED:",
-        item.src
-      );
-
-      console.error(
-        "Video URL:",
-        videoUrl
-      );
-
-      console.error(
-        "Video error:",
-        video.error
-      );
-
-      /*
-         Keep the frame visible rather than leaving
-         it completely blank.
-      */
-      frameData.material.map=
-        makePlaceholderTexture("video unavailable");
-
-      frameData.material.needsUpdate=true;
-    }
-  );
-
-
-  /*
-     Start loading.
-  */
-  video.load();
-
-
-  /*
-     Extra playback attempts during the first few seconds.
-     This helps with browsers that delay autoplay.
-  */
-  const retryTimes=[
-    300,
-    800,
-    1500,
-    2500,
-    4000
-  ];
-
-  retryTimes.forEach(delay=>{
-
-    setTimeout(()=>{
-
-      if(
-        video.paused &&
-        !video.ended
-      ){
-        video.play().catch(()=>{});
-      }
-
-    },delay);
-
+  video.addEventListener("loadedmetadata", () => {
+    console.log(
+      "[MEDIA] Metadata loaded:",
+      item.src,
+      video.videoWidth + "x" + video.videoHeight
+    );
+    updateVideoTexture();
+    playVideo();
   });
 
-}
+  video.addEventListener("loadeddata", () => {
+    updateVideoTexture();
+    texture.needsUpdate = true;
+    playVideo();
+  });
 
+  video.addEventListener("canplay", () => {
+    updateVideoTexture();
+    texture.needsUpdate = true;
+    playVideo();
+  });
+
+  video.addEventListener("playing", () => {
+    updateVideoTexture();
+    texture.needsUpdate = true;
+  });
+
+  video.addEventListener("timeupdate", () => {
+    texture.needsUpdate = true;
+  });
+
+  /* Modern browsers can tell us exactly when a new video frame is ready. */
+  if ("requestVideoFrameCallback" in HTMLVideoElement.prototype) {
+    const updateFrame = () => {
+      texture.needsUpdate = true;
+      video.requestVideoFrameCallback(updateFrame);
+    };
+    video.requestVideoFrameCallback(updateFrame);
+  }
+
+  /* Retry playback without ever replacing a working texture. */
+  const retryTimes = [250, 700, 1400, 2500, 4000, 7000];
+
+  retryTimes.forEach(delay => {
+    setTimeout(() => {
+      if (video.paused && !video.ended) {
+        playVideo();
+      }
+    }, delay);
+  });
+
+  /*
+     Do NOT silently leave the frame black if the asset cannot be loaded.
+     Show a diagnostic placeholder instead, while logging the real reason.
+  */
+  video.addEventListener("error", () => {
+    const mediaError = video.error;
+
+    console.error("[MEDIA] VIDEO FAILED");
+    console.error("[MEDIA] Config path:", item.src);
+    console.error("[MEDIA] Resolved URL:", videoUrl);
+    console.error("[MEDIA] Media error:", mediaError);
+
+    frameData.material.map = makePlaceholderTexture("video unavailable");
+    frameData.material.needsUpdate = true;
+  });
+
+  source.addEventListener("error", () => {
+    console.error(
+      "[MEDIA] <source> failed. Check that this exact file exists:",
+      videoUrl
+    );
+  });
+
+  /* Begin loading only after all listeners and the texture are ready. */
+  video.load();
+
+  /*
+     A user gesture anywhere on the page is also a useful final retry.
+     This matters on browsers that block media until the user interacts.
+  */
+  const retryFromGesture = () => {
+    if (video.paused && !video.ended) {
+      playVideo();
+    }
+  };
+
+  window.addEventListener("pointerdown", retryFromGesture, { passive: true });
+  window.addEventListener("touchstart", retryFromGesture, { passive: true });
+
+}
 
       /*
         Load every image/video independently.
@@ -5388,4 +5321,3 @@ function loadVideo(item,frameData,index){
 </body>
 
 </html>
-```
